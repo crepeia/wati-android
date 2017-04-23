@@ -44,6 +44,10 @@
         <activity
             android:name=".Sobre"
             android:label="@string/title_activity_sobre"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Logout"
+            android:label="@string/title_activity_logout"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

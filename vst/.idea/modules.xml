@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Progresso.iml" filepath="$PROJECT_DIR$/Progresso.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vst.iml" filepath="$PROJECT_DIR$/vst.iml" />
     </modules>
   </component>
 </project>
