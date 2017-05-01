@@ -1,0 +1,12 @@
+dependencies {
+    compile project( ':hibernate-core' )
+    compile( libraries.ehcache )
+
+    testCompile project( ':hibernate-testing' )
+}
+
+jar {
+    manifest {
+        instruction 'Bundle-Description', 'Hibernate ORM EHCache'
+    }
+}
