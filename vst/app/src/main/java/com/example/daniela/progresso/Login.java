@@ -33,14 +33,13 @@ public class Login extends AppCompatActivity {
     private UserDAO userDAO;
     private User user;
     LoginButton loginButton;
+
     CallbackManager callbackManager;
 
-    ImageView photoPefil;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        photoPefil = (ImageView) findViewById(R.id.photo_perfil);
         dbsqLite = new DBSQLite(Login.this);
         try {
             userDAO = new UserDAO(dbsqLite.getConnectionSource());
@@ -48,6 +47,7 @@ public class Login extends AppCompatActivity {
             e.printStackTrace();
         }
         user = new User();
+
 
         FacebookSdk.setApplicationId("1436518353045731");
         FacebookSdk.sdkInitialize(getApplicationContext());
@@ -62,6 +62,8 @@ public class Login extends AppCompatActivity {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 setFacebookData(loginResult);
+
+
                 if(user.getCigarros() != null && user.getValorMaco() != null){
                     Intent i = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(i);
@@ -103,6 +105,7 @@ public class Login extends AppCompatActivity {
                             String lastName = response.getJSONObject().getString("last_name");
                             String gender = response.getJSONObject().getString("gender");
 
+
                             Profile profile = Profile.getCurrentProfile();
                             //String id = profile.getId();
                             //String link = profile.getLinkUri().toString();
@@ -133,8 +136,11 @@ public class Login extends AppCompatActivity {
                             Log.i("LogX" , user.getEmail());
                             Log.i("LogX" , user.getGender());
                             Log.i("LogX" , String.valueOf(user.getId()));
+                            //UserManager.logFacebook(user);
+                            UserManager.setUser(UserManager.logFacebook(user));
 
                             userDAO.create(user);
+
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -143,6 +149,7 @@ public class Login extends AppCompatActivity {
                         }
                     }
                 });
+        dbsqLite.close();
         Bundle parameters = new Bundle();
         parameters.putString("fields", "id,email,first_name,last_name,gender");
         request.setParameters(parameters);
@@ -163,6 +170,22 @@ public class Login extends AppCompatActivity {
             startActivity(i);
         }
     }
+
+    /*public static User loggedUser(User user){
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        if(accessToken != null){
+            Log.i("Saída: ", user.getName());
+            return user;
+            //tem alguem logado
+        }
+
+        else
+            Log.i("Saída: ", " Usuário não logado");
+            return null;
+
+    }*/
+
+
 
 
 

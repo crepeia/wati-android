@@ -1,5 +1,8 @@
 package com.example.daniela.progresso.Entidade;
 
+import android.util.Log;
+
+import com.facebook.AccessToken;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -96,4 +99,18 @@ public class User {
     public String getGender() { return gender;}
 
     public void setGender(String gender) { this.gender = gender; }
+
+    public User loggedUser(User user){
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        if(accessToken != null){
+            Log.i("Saída: ", user.getName());
+            return user;
+            //tem alguem logado
+        }
+
+        else
+            Log.i("Saída: ", " Usuário não logado");
+        return null;
+
+    }
 }
