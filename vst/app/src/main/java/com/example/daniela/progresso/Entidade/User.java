@@ -6,6 +6,8 @@ import com.facebook.AccessToken;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.io.Serializable;
+
 /**
  * Created by daniela on 25/04/17.
  */
@@ -27,7 +29,7 @@ import com.j256.ormlite.table.DatabaseTable;
     public float valorMaco;
 */
 @DatabaseTable (tableName = "user")
-public class User {
+public class User implements Serializable{
     @DatabaseField (columnName = "id", generatedId = true)//(allowGeneratedIdInsert=true, generatedId=true)
     private int id;
 

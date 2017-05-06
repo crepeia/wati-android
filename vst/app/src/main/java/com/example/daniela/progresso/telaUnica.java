@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.daniela.progresso.DAO.DBSQLite;
@@ -20,6 +21,7 @@ public class telaUnica extends AppCompatActivity {
     private UserDAO userDAO;
     private User user;
 
+    TextView nome;
     EditText cigarros;
     EditText valorMaco;
     //UserDAO usrDAO;
@@ -41,6 +43,11 @@ public class telaUnica extends AppCompatActivity {
 
         cigarros = (EditText) findViewById(R.id.questionCigarros);
         valorMaco = (EditText) findViewById(R.id.questionCustaMaco);
+        nome = (TextView) findViewById(R.id.bemVindo);
+        nome.setText("Bem vindo " + UserManager.getUser().getName());
+
+        Log.i("Unica ", UserManager.getUser().getName());
+        Log.i("Unica: ", UserManager.getUser().getEmail());
         //usrDAO = new UserDAO(this);
     }
 
@@ -67,11 +74,21 @@ public class telaUnica extends AppCompatActivity {
     public void clicouSalvarCigarroMaco(View view) throws Exception {
 
         user = UserManager.getUser();
+
+        Log.i("Unica ", UserManager.getUser().getName());
+        Log.i("Unica: ", UserManager.getUser().getEmail());
+
         Log.i("telaNome: ", user.getName());
         Log.i("telaID: ", String.valueOf(user.getId()));
+
+        Log.i("ValorCigarros:", String.valueOf(user.getCigarros()));
+        Log.i("ValorCigarros:", String.valueOf(user.getValorMaco()));
+
+
         user.setCigarros(Integer.parseInt(cigarros.getText().toString()));
         user.setValorMaco((valorMaco.getText().toString()));
 
+        UserManager.setUser(user);
 
         // This is how, a reference of DAO object can be done
        // final Dao<User, Integer> userDao = getHelper().getUserDao();
@@ -79,11 +96,11 @@ public class telaUnica extends AppCompatActivity {
 
         userDAO.update(user);
 
-        if (user.getId() > 0) {
-            Toast.makeText(this, "Salvo com sucesso!!!", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Não", Toast.LENGTH_SHORT).show();
-        }
+        Log.i("ValorCigarros:", String.valueOf(user.getCigarros()));
+        Log.i("ValorCigarros:", String.valueOf(user.getValorMaco()));
+
+
+
 
         Intent it = new Intent(this, MainActivity.class);
         startActivity(it);
@@ -91,20 +108,6 @@ public class telaUnica extends AppCompatActivity {
         dbsqLite.close();
     }
 
-       /* User user = new User();
-
-        user.cigarros = Integer.parseInt(cigarros.getText().toString());
-        user.valorMaco = Integer.parseInt(valorMaco.getText().toString());
-
-        user.id = usrDAO.insert(user);
-        if (user.id > 0){
-            Toast.makeText(this, "Salvo com sucesso", Toast.LENGTH_SHORT).show();
-
-        }else{
-            Toast.makeText(this, "Não", Toast.LENGTH_SHORT).show();
-        }
-        Intent it = new Intent(this,MainActivity.class);
-        startActivity(it);*/
 }
 
 

@@ -4,6 +4,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
@@ -26,14 +28,18 @@ public class Logout extends AppCompatActivity {
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int which) {
                         // Codigo para enviar
+                        Log.i("sair", "sair");
                         if (AccessToken.getCurrentAccessToken() == null) {
+                            Log.i("sair1", "sair");
                             return; // already logged out
+
                         }
 
                         new GraphRequest(AccessToken.getCurrentAccessToken(), "/me/permissions/", null, HttpMethod.DELETE, new GraphRequest.Callback() {
                             @Override
                             public void onCompleted(GraphResponse graphResponse) {
 
+                                Log.i("sair2", "sair");
                                 LoginManager.getInstance().logOut();
 
                             }

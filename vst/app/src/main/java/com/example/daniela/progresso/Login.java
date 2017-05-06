@@ -25,13 +25,14 @@ import org.json.JSONObject;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
 
 
 public class Login extends AppCompatActivity {
 
     private DBSQLite dbsqLite;
     private UserDAO userDAO;
-    private User user;
+    User usr;
     LoginButton loginButton;
 
     CallbackManager callbackManager;
@@ -40,14 +41,14 @@ public class Login extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //usr = new User();
         dbsqLite = new DBSQLite(Login.this);
+
         try {
             userDAO = new UserDAO(dbsqLite.getConnectionSource());
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        user = new User();
-
 
         FacebookSdk.setApplicationId("1436518353045731");
         FacebookSdk.sdkInitialize(getApplicationContext());
@@ -61,17 +62,25 @@ public class Login extends AppCompatActivity {
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
+                //User user = UserManager.getUser();
                 setFacebookData(loginResult);
 
+              /*  User user = UserManager.getUser();
 
-                if(user.getCigarros() != null && user.getValorMaco() != null){
-                    Intent i = new Intent(getApplicationContext(), MainActivity.class);
-                    startActivity(i);
+                Log.i("Manager1: ", user.getName());
+                Log.i("Manager1: ", user.getEmail());
+
+
+
+                try {
+                    userDAO.create(user);//verificar se é novo
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
-                else{
-                    Intent i = new Intent(getApplicationContext(), telaUnica.class);
-                    startActivity(i);
-                }
+                dbsqLite.close();
+
+                redirecionarUsuario(user);*/
+
             }
 
             @Override
@@ -89,6 +98,7 @@ public class Login extends AppCompatActivity {
 
     private void setFacebookData(final LoginResult loginResult)
     {
+
         GraphRequest request = GraphRequest.newMeRequest(
                 loginResult.getAccessToken(),
                 new GraphRequest.GraphJSONObjectCallback() {
@@ -120,9 +130,23 @@ public class Login extends AppCompatActivity {
                             {
                                 Log.i("Login", "ProfilePic" + Profile.getCurrentProfile().getProfilePictureUri(200, 200));
                             }
+                            //User user = UserManager.getUser();
+
+                            User user = new User();
+
+                            //Log.i("Manager2: ", UserManager.getUser().getName());
+                            //Log.i("Manager2: ", UserManager.getUser().getEmail());
+
                             user.setName(firstName);
                             user.setEmail(email);
                             user.setGender(gender);
+
+                            Log.i("Manager3: ", user.getName());
+                            Log.i("Manager3: ", user.getEmail());
+
+                            UserManager.setUser(user);
+                            Log.i("Manager4: ", UserManager.getUser().getName());
+                            Log.i("Manager4: ", UserManager.getUser().getEmail());
 
 
                             Log.i("Login" + "Id", id);
@@ -137,23 +161,37 @@ public class Login extends AppCompatActivity {
                             Log.i("LogX" , user.getGender());
                             Log.i("LogX" , String.valueOf(user.getId()));
                             //UserManager.logFacebook(user);
-                            UserManager.setUser(UserManager.logFacebook(user));
+                            //UserManager.setUser(UserManager.logFacebook(user));
 
-                            userDAO.create(user);
+
+                            Log.i("Manager1: ", UserManager.getUser().getName());
+                            Log.i("Manager1: ", UserManager.getUser().getEmail());
+
+
+                            try {
+                                List<User> usrLista = userDAO.queryForEq("email", user.getEmail());
+                                if(usrLista.isEmpty())
+                                    userDAO.create(user);//verificar se é novo
+                                else
+                                    userDAO.update(user);
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                            }
+                            dbsqLite.close();
+
+                            redirecionarUsuario(user);
 
 
                         } catch (JSONException e) {
                             e.printStackTrace();
-                        } catch (SQLException e) {
-                            e.printStackTrace();
                         }
                     }
                 });
-        dbsqLite.close();
         Bundle parameters = new Bundle();
         parameters.putString("fields", "id,email,first_name,last_name,gender");
         request.setParameters(parameters);
         request.executeAsync();
+
     }
 
 
@@ -162,13 +200,47 @@ public class Login extends AppCompatActivity {
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    protected void onStart(){
-        super.onStart();
-        AccessToken acessToken = AccessToken.getCurrentAccessToken();
-        if (acessToken != null){
+    public void redirecionarUsuario(User user){
+        if(user.getCigarros() != null && user.getValorMaco() != null && user!=null){
+            Log.i("ValorCigarros:", String.valueOf(user.getCigarros()));
+            Log.i("ValorCigarros:", String.valueOf(user.getValorMaco()));
+
+            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(i);
+        }
+        else{
+            Log.i("ValorCigarros:", String.valueOf(user.getCigarros()));
+            Log.i("ValorCigarros:", String.valueOf(user.getValorMaco()));
             Intent i = new Intent(getApplicationContext(), telaUnica.class);
             startActivity(i);
         }
+    }
+
+
+    protected void onStart(){
+        super.onStart();
+     //   AccessToken acessToken = AccessToken.getCurrentAccessToken();
+      //  if (acessToken != null){
+        dbsqLite = new DBSQLite(Login.this);
+
+        try {
+            userDAO = new UserDAO(dbsqLite.getConnectionSource());
+            List<User> list= userDAO.queryForAll();
+            //User u = userDAO.queryForAll().get(0);//listar usuário online
+
+            if(!list.isEmpty()){
+                UserManager.setUser(list.get(0));
+                Log.i("Managerrrrrrrrrrr: ", UserManager.getUser().getName());
+                Log.i("Managerrrrrrrrrrr: ", UserManager.getUser().getEmail());
+                //Intent i = new Intent(getApplicationContext(), telaUnica.class);
+                //startActivity(i);
+                redirecionarUsuario(UserManager.getUser());
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /*public static User loggedUser(User user){
