@@ -40,7 +40,9 @@ public class Logout extends AppCompatActivity {
                             public void onCompleted(GraphResponse graphResponse) {
 
                                 Log.i("sair2", "sair");
+
                                 LoginManager.getInstance().logOut();
+                               // UserManager.setUser(null);
 
                             }
                         }).executeAsync();

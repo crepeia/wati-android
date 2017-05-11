@@ -12,22 +12,6 @@ import java.io.Serializable;
  * Created by daniela on 25/04/17.
  */
 
-
-   /* public static final String tabela = "user";
-    public static final String campo_id = "id";
-    public static final String campo_name = "name";
-    public static final String campo_email = "email";
-    public static final String campo_cigarros = "cigarros";
-    public static final String campo_valorMaco = "valorMaco";
-
-
-
-    public Long id;
-    public String name;
-    public String email;
-    public int cigarros;
-    public float valorMaco;
-*/
 @DatabaseTable (tableName = "user")
 public class User implements Serializable{
     @DatabaseField (columnName = "id", generatedId = true)//(allowGeneratedIdInsert=true, generatedId=true)

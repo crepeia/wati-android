@@ -32,7 +32,6 @@ public class Login extends AppCompatActivity {
 
     private DBSQLite dbsqLite;
     private UserDAO userDAO;
-    User usr;
     LoginButton loginButton;
 
     CallbackManager callbackManager;
@@ -55,7 +54,7 @@ public class Login extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
 
-        loginButton = (LoginButton) findViewById(R.id.loginButton);
+        loginButton = (LoginButton) findViewById(R.id.tutorial_button_login);
         loginButton.setReadPermissions(Arrays.asList("public_profile", "email"));
         callbackManager = CallbackManager.Factory.create();
 
@@ -141,16 +140,16 @@ public class Login extends AppCompatActivity {
                             user.setEmail(email);
                             user.setGender(gender);
 
-                            Log.i("Manager3: ", user.getName());
-                            Log.i("Manager3: ", user.getEmail());
+                           // Log.i("Manager3: ", user.getName());
+                            //Log.i("Manager3: ", user.getEmail());
 
                             UserManager.setUser(user);
-                            Log.i("Manager4: ", UserManager.getUser().getName());
-                            Log.i("Manager4: ", UserManager.getUser().getEmail());
+                            //Log.i("Manager4: ", UserManager.getUser().getName());
+                            //Log.i("Manager4: ", UserManager.getUser().getEmail());
 
 
-                            Log.i("Login" + "Id", id);
-
+                            //Log.i("Login" + "Id", id);
+/*
                             Log.i("Login" + "Email", email);
                             Log.i("Login"+ "FirstName", firstName);
                             Log.i("Login" + "LastName", lastName);
@@ -159,13 +158,13 @@ public class Login extends AppCompatActivity {
                             Log.i("LogX" , user.getName());
                             Log.i("LogX" , user.getEmail());
                             Log.i("LogX" , user.getGender());
-                            Log.i("LogX" , String.valueOf(user.getId()));
+                            Log.i("LogX" , String.valueOf(user.getId()));*/
                             //UserManager.logFacebook(user);
                             //UserManager.setUser(UserManager.logFacebook(user));
 
 
-                            Log.i("Manager1: ", UserManager.getUser().getName());
-                            Log.i("Manager1: ", UserManager.getUser().getEmail());
+                            //Log.i("Manager1: ", UserManager.getUser().getName());
+                            //Log.i("Manager1: ", UserManager.getUser().getEmail());
 
 
                             try {
@@ -201,16 +200,18 @@ public class Login extends AppCompatActivity {
     }
 
     public void redirecionarUsuario(User user){
-        if(user.getCigarros() != null && user.getValorMaco() != null && user!=null){
+        if(user.getCigarros() != null && user.getValorMaco() != null){
             Log.i("ValorCigarros:", String.valueOf(user.getCigarros()));
-            Log.i("ValorCigarros:", String.valueOf(user.getValorMaco()));
+            Log.i("ValorMaco:", String.valueOf(user.getValorMaco()));
+            Log.i("Valorname:", String.valueOf(user.getName()));
 
             Intent i = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(i);
         }
         else{
             Log.i("ValorCigarros:", String.valueOf(user.getCigarros()));
-            Log.i("ValorCigarros:", String.valueOf(user.getValorMaco()));
+            Log.i("ValorMaco:", String.valueOf(user.getValorMaco()));
+            Log.i("Valorname:", String.valueOf(user.getName()));
             Intent i = new Intent(getApplicationContext(), telaUnica.class);
             startActivity(i);
         }
@@ -229,13 +230,14 @@ public class Login extends AppCompatActivity {
             //User u = userDAO.queryForAll().get(0);//listar usuário online
 
             if(!list.isEmpty()){
+
                 UserManager.setUser(list.get(0));
-                Log.i("Managerrrrrrrrrrr: ", UserManager.getUser().getName());
-                Log.i("Managerrrrrrrrrrr: ", UserManager.getUser().getEmail());
+                Log.i("Usuário logado: ", UserManager.getUser().getName());
+               // Log.i("Managerrrrrrrrrrr: ", UserManager.getUser().getEmail());
                 //Intent i = new Intent(getApplicationContext(), telaUnica.class);
                 //startActivity(i);
-                redirecionarUsuario(UserManager.getUser());
 
+                redirecionarUsuario(UserManager.getUser());
             }
         } catch (SQLException e) {
             e.printStackTrace();

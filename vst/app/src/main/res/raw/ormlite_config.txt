@@ -1,0 +1,123 @@
+## --table-start--
+dataClass=com.example.daniela.progresso.Entidade.User
+tableName=user
+# --table-fields-start--
+# --field-start--
+fieldName=id
+columnName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=name
+columnName=name
+# --field-end--
+# --field-start--
+fieldName=email
+columnName=email
+# --field-end--
+# --field-start--
+fieldName=cigarros
+columnName=cigarros
+# --field-end--
+# --field-start--
+fieldName=valorMaco
+columnName=valor_maco
+# --field-end--
+# --field-start--
+fieldName=gender
+columnName=gender
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+
+#################################
+# --table-start--
+dataClass=com.example.daniela.progresso.Entidade.Cigarros
+tableName=cigarros
+# --table-fields-start--
+# --field-start--
+fieldName=id
+columnName=id_cigarro
+generatedId = true
+# --field-end--
+# --field-start--
+fieldName=date
+columnName=date
+# --field-end--
+# --field-start--
+fieldName=salvo
+columnName=salvo
+# --field-end--
+# --field-start--
+fieldName=cigarrosDiario
+columnName=cigarros_Diario
+# --field-end--
+# --field-start--
+fieldName=user
+columnName=user_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+
+#################################
+# --table-start--
+dataClass=com.example.daniela.progresso.Entidade.Acao
+tableName=acao
+# --table-fields-start--
+# --field-start--
+fieldName=id
+columnName=id_acao
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=ponto
+columnName=ponto
+# --field-end--
+# --field-start--
+fieldName=user
+columnName=user_id
+canBeNull=false
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=desafio
+columnName=desafio_id
+canBeNull=false
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+
+#################################
+# --table-start--
+dataClass=com.example.daniela.progresso.Entidade.Desafio
+tableName=desafio
+# --table-fields-start--
+# --field-start--
+fieldName=id
+columnName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=descricao
+columnName=descricao
+# --field-end--
+# --field-start--
+fieldName=tipo
+columnName=tipo
+# --field-end--
+# --field-start--
+fieldName=pontuacao
+columnName=pontuacao
+# --field-end--
+# --field-start--
+fieldName=variacao
+columnName=variacao
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################

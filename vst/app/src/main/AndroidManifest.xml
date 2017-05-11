@@ -48,7 +48,8 @@
         <activity
             android:name=".Logout"
             android:label="@string/title_activity_logout"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>

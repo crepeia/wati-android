@@ -3,20 +3,17 @@ package com.example.daniela.progresso.DAO;
 import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.example.daniela.progresso.Entidade.Acoes;
+import com.example.daniela.progresso.Entidade.Acao;
+import com.example.daniela.progresso.Entidade.Cigarros;
+import com.example.daniela.progresso.Entidade.Desafios;
 import com.example.daniela.progresso.Entidade.User;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
 
 /**
  * Created by daniela on 25/04/17.
@@ -27,10 +24,12 @@ public class DBSQLite extends OrmLiteSqliteOpenHelper {
     // Campos
 
     public static final String DB_NAME = "watiAndroid.db";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 3;
 
     private Dao<User, Integer> userDao;
-    private Dao<Acoes, Integer> acaoDao;
+    private Dao<Acao, Integer> acaoDao;
+    private Dao<Cigarros, Integer> cigarrosDao;
+    private Dao<Desafios, Integer> desafioDao;
 
     // Métodos públicos
 
@@ -45,7 +44,9 @@ public class DBSQLite extends OrmLiteSqliteOpenHelper {
 
             // Create tables. This onCreate() method will be invoked only once of the application life time i.e. the first time when the application starts.
             TableUtils.createTable(connectionSource, User.class);
-            TableUtils.createTable(connectionSource, Acoes.class);
+            TableUtils.createTable(connectionSource, Acao.class);
+            TableUtils.createTable(connectionSource, Cigarros.class);
+            TableUtils.createTable(connectionSource, Desafios.class);
 
         } catch (SQLException e) {
             Log.e(DBSQLite.class.getName(), "Unable to create datbases", e);
@@ -65,7 +66,9 @@ public class DBSQLite extends OrmLiteSqliteOpenHelper {
             // existing database etc.
 
             TableUtils.dropTable(connectionSource, User.class, true);
-            TableUtils.dropTable(connectionSource, Acoes.class, true);
+            TableUtils.dropTable(connectionSource, Acao.class, true);
+            TableUtils.dropTable(connectionSource, Cigarros.class, true);
+            TableUtils.dropTable(connectionSource, Desafios.class, true);
             onCreate(db, connectionSource);
 
         } catch (SQLException e) {
@@ -89,9 +92,23 @@ public class DBSQLite extends OrmLiteSqliteOpenHelper {
 
     public Dao getAcaoDao() throws SQLException, java.sql.SQLException {
         if (acaoDao == null){
-            acaoDao = getDao(Acoes.class);
+            acaoDao = getDao(Acao.class);
         }
         return acaoDao;
+    }
+
+    public Dao getCigarroDao() throws SQLException, java.sql.SQLException {
+        if (cigarrosDao == null){
+            cigarrosDao = getDao(Cigarros.class);
+        }
+        return cigarrosDao;
+    }
+
+    public Dao getDesafioDao() throws SQLException, java.sql.SQLException {
+        if (desafioDao == null){
+            desafioDao = getDao(Desafios.class);
+        }
+        return desafioDao;
     }
 }
 
