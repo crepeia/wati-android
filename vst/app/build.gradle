@@ -33,8 +33,10 @@ dependencies {
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
     compile 'com.squareup.picasso:picasso:2.5.2'
     testCompile 'junit:junit:4.12'
+    compile 'com.google.code.ksoap2-android:ksoap2-android:3.6.2' //webservice
 }
 
 repositories{
     mavenCentral()
+    maven { url 'https://oss.sonatype.org/content/repositories/ksoap2-android-releases/' }
 }
