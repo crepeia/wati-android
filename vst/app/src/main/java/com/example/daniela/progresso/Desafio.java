@@ -12,9 +12,11 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.example.daniela.progresso.DAO.AcaoDAO;
+import com.example.daniela.progresso.DAO.CigarrosDAO;
 import com.example.daniela.progresso.DAO.DBSQLite;
 import com.example.daniela.progresso.DAO.DesafioDAO;
 
+import com.example.daniela.progresso.Entidade.Acao;
 import com.example.daniela.progresso.Entidade.Desafios;
 
 import java.sql.SQLException;
@@ -31,9 +33,8 @@ public class Desafio extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_desafio);
 
-        dbsqLite = new DBSQLite(Desafio.this);
         desafios = new Desafios();
-
+        dbsqLite = new DBSQLite(Desafio.this);
         try {
             desafioDAO = new DesafioDAO(dbsqLite.getConnectionSource());
         } catch (SQLException e) {
@@ -56,6 +57,13 @@ public class Desafio extends AppCompatActivity {
             list.add(values[i]);
         }
 
+        for (int j = 0; j < values.length; j++){
+            desafios.setDescricao(values[j]);
+            desafios.setPontuacao(20);
+            desafios.setTipo(1);
+            desafios.setVariacao(1);
+
+        }
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, list);
 
@@ -65,13 +73,13 @@ public class Desafio extends AppCompatActivity {
 
     }
 
-    public void carregaDescricaoBD(ArrayList<String> arrayList) throws SQLException {
+   /* public void carregaDescricaoBD(ArrayList<String> arrayList) throws SQLException {
         int i;
         for (i = 0; i < arrayList.size(); i++){
             desafios.setDescricao(arrayList.get(i));
             desafioDAO.create(desafios);
         }
-    }
+    }*/
 
 
 }
