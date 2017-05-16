@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -70,19 +71,19 @@ public class MainActivity extends AppCompatActivity
 
         try {//No futuro passar essas condições para dentro do DAO
             List<Cigarros> cigarrosList = cigarroDAO.queryForAll();//filtrar para usuário logado FAZER
-            System.out.println("data do cigarro: " + cigarrosList.get(cigarrosList.size()-1).getDate());
-            if(cigarrosList.isEmpty()) {
+            // System.out.println("data do cigarro: " + cigarrosList.get(cigarrosList.size()-1).getDate());
+            if (cigarrosList.isEmpty()) {
                 System.out.println("lista vazia");
                 cigarros = new Cigarros();
                 cigarros.setUser(UserManager.getUser());
-            }else{
+            } else {
                 Calendar c = Calendar.getInstance();
-                c.setTime(cigarrosList.get(cigarrosList.size()-1).getDate());
+                c.setTime(cigarrosList.get(cigarrosList.size() - 1).getDate());
                 System.out.println("calendario");
-                if(dateAtual.get(Calendar.YEAR) == c.get(Calendar.YEAR) && dateAtual.get(Calendar.DAY_OF_YEAR) == c.get(Calendar.DAY_OF_YEAR)){
+                if (dateAtual.get(Calendar.YEAR) == c.get(Calendar.YEAR) && dateAtual.get(Calendar.DAY_OF_YEAR) == c.get(Calendar.DAY_OF_YEAR)) {
                     cigarros = cigarrosList.get(cigarrosList.size() - 1);
                     System.out.println("if");
-                }else{
+                } else {
                     System.out.println("else");
                     cigarros = new Cigarros();
                     cigarros.setUser(UserManager.getUser());
@@ -107,28 +108,19 @@ public class MainActivity extends AppCompatActivity
 
         cigarrosFumados.setText(Integer.toString(cigarros.getCigarrosDiario()));
 
+        dinheiroEconomizado();
+        dinheiroNaoEconomizado();
+
         Log.i("Diario:", Integer.toString(cigarros.getCigarrosDiario()));
-        Log.i("Diario:", String.valueOf(cigarros.isSalvo()));
 
-
-       /* SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        SimpleDateFormat sdf1 = new SimpleDateFormat(" HH:mm:ss");
-
-        String currentDateandTime = sdf.format(new Date());
-        String currentDateandTime1 = sdf1.format(new Date());
-
-        Log.i("data", currentDateandTime);
-        Log.i("hora", currentDateandTime1);
-
-        Log.i("data e hora: ", currentDateandTime + currentDateandTime1);
-*/
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        grafico();
+    }
 
-        //Gráfico da tela principal:
-
+    public void grafico(){
         GraphView graph = (GraphView) findViewById(R.id.graph);
         graph.setTitle("Cigarros");
 
@@ -147,14 +139,16 @@ public class MainActivity extends AppCompatActivity
         graph.getViewport().setMinX(1);
         graph.getViewport().setMaxX(8);
 
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
-                new DataPoint(0, 1),
-                new DataPoint(1, 5),
-                new DataPoint(2, 3),
-                new DataPoint(3, 2),
-                new DataPoint(4, 6)
-        });
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(generateData(pontos()));
         graph.addSeries(series);
+        //LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[]{
+        //new DataPoint(0, 1),
+        //new DataPoint(1, 5),
+        //new DataPoint(2, 3),
+        //new DataPoint(3, 2),
+        //new DataPoint(4, 6)
+        //});
+        //graph.addSeries(series);
 
         LineGraphSeries<DataPoint> series2 = new LineGraphSeries<>(new DataPoint[] {
                 new DataPoint(0, 3),
@@ -172,6 +166,42 @@ public class MainActivity extends AppCompatActivity
         graph.getLegendRenderer().setVisible(true);
         graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
     }
+
+    public int[] pontos(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.get(Calendar.DAY_OF_WEEK);
+        System.out.println("day of week: " + calendar.get(Calendar.DAY_OF_WEEK));
+        //calendar.add(Calendar.DAY_OF_WEEK, -1);
+        int pontsGrafico[] = new int[7];
+
+        int j = calendar.get(Calendar.DAY_OF_WEEK);
+        System.out.println("j:" + j);
+        for (int i = 0; i < 7; i++){
+            if(i == j) {
+                pontsGrafico[i] = cigarros.getCigarrosDiario();
+                System.out.println("cigarros:" + cigarros.getCigarrosDiario());
+                System.out.println("pontsgrauc: " + pontsGrafico[i]);
+                System.out.println("i:" + i);
+            }
+        }
+        return pontsGrafico;
+    }
+
+    public DataPoint[] generateData(int[] pontsGraf){
+        Calendar calendar = Calendar.getInstance();
+        int count = calendar.get(Calendar.DAY_OF_WEEK);
+        System.out.println("Count: " + count);
+        DataPoint[] values = new DataPoint[count+1];
+        for (int i=0; i < (count + 1); i++) {
+            System.out.println("i:" + i);
+            DataPoint v = new DataPoint(i, pontsGraf[i]);
+            System.out.println("v:" + v);
+            values[i] = v;
+            System.out.println("values: " + values[i]);
+        }
+        return values;
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -242,40 +272,47 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public void dinheiroEconomizado(int cigarros){
+    public void dinheiroEconomizado(){
 
-        //ArrayList<Float> dinheiroEconomizado = new ArrayList<>();
+        float valorPorCigarro = 0, economizado=0;
+        valorPorCigarro = Float.parseFloat(UserManager.getUser().getValorMaco())/20;
+        System.out.println("valor por cigarro: " + valorPorCigarro);
+        int cigFum = cigarros.getCigarrosDiario();
+        System.out.println("cigFum: " + cigFum);
+        int nFumados = UserManager.getUser().getCigarros() - cigFum;
+        System.out.println("nFumados: " + nFumados);
 
-        float valorPorCigarro = 0, dinheiroEcon = 0;
 
-        // diferenca entre o que usuário fuma normalmente e a qtd de cigarro fumados no dia
-        int cigarrosNaoFumados = (Integer.parseInt(String.valueOf(UserManager.getUser().getCigarros())) - cigarros);
-
-        if(cigarros > UserManager.getUser().getCigarros()){ //se a qtde de cigarros fumados for maior que oq normalmente fuma
-            dinheiroNãoEconomizado(cigarrosNaoFumados); //chamar esta função passando como parametro o valor alem do que normalmente fuma
+        if(nFumados > 0){
+            economizado = economizado + (nFumados * valorPorCigarro);
+            System.out.println("economizado" + economizado);
+            dinheiroEconomizado.setText("R$ " + economizado + ",00");
+        }else{
+            dinheiroNaoEconomizado();
+            System.out.println("entrou no else");
         }
-
-        valorPorCigarro = (Float.parseFloat(UserManager.getUser().getValorMaco()))/20;
-        dinheiroEcon = (valorPorCigarro * cigarrosNaoFumados) + dinheiroEcon;
-
-        //dinheiroEconomizado.add(dinheiroEcon);
     }
 
-    public void dinheiroNãoEconomizado(int cigarros){
-       // ArrayList<Float> dinheiroNaoEconomizado = new ArrayList<>();
+    public void dinheiroNaoEconomizado(){
 
-        float valorPorCigarro = 0, dinheiroNaoEcon = 0;
-        valorPorCigarro = (Float.parseFloat(UserManager.getUser().getValorMaco()))/20;
+        float valorPorCigarro = 0, nEconomizado=0;
+        valorPorCigarro = Float.parseFloat(UserManager.getUser().getValorMaco())/20;
+        System.out.println("valor por cigarro: " + valorPorCigarro);
+        int cigFum = cigarros.getCigarrosDiario();
+        System.out.println("cigFum: " + cigFum);
+        int Fumados = UserManager.getUser().getCigarros() - cigFum;
+        System.out.println("Fumados: " + Fumados);
 
-        dinheiroNaoEcon = (valorPorCigarro * cigarros) + dinheiroNaoEcon;
-
-        //dinheiroNaoEconomizado.add(dinheiroNaoEcon);
+        if(Fumados < 0){
+            Fumados = Math.abs(Fumados);
+            nEconomizado = nEconomizado + (Fumados * valorPorCigarro);
+            System.out.println("economizado" + nEconomizado);
+            dinheiroNaoEconomizado.setText("R$ " + nEconomizado + ",00");
+        }
     }
 
-    public void addCigarro(View v) throws SQLException, ParseException {
+    public void addCigarro(View v) throws SQLException{
         Calendar cal = Calendar.getInstance();
-
-        //SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
         System.out.println("data em formato DATE: " + cal.getTime());
 
         cigarros.setCigarrosDiario(cigarros.getCigarrosDiario() + 1);
@@ -292,67 +329,41 @@ public class MainActivity extends AppCompatActivity
         }catch (SQLException e){
             e.printStackTrace();
         }
-
-
+        dinheiroEconomizado();
+        dinheiroNaoEconomizado();
+        pontos();
+        grafico();
     }
 
-        /*if (cigarros.isSalvo() == true) {
-            cigarroDAO.update(cigarros);
-            Log.i("cig", "1111111111");
-            Log.i("cig", String.valueOf(cigarros.isSalvo()));
+    public void subCigarro(View v) throws SQLException {
+        Calendar cal = Calendar.getInstance();
+        if(cigarros.getCigarrosDiario() == 0){
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+
+            alertDialog.setTitle("Você ainda não fumou cigarros hoje!");
+        }else {
+            if (cigarros.getCigarrosDiario() != 0) {
+                cigarros.setCigarrosDiario(cigarros.getCigarrosDiario() - 1);
+                cigarrosFumados.setText(Integer.toString(cigarros.getCigarrosDiario()));
+                cigarros.setDate(cal.getTime());
+                try {
+                    cigarroDAO.update(cigarros);
+                    //cigarroDAO.createOrUpdate(cigarros);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        else {
-            cigarros.setSalvo(true);
-            cigarroDAO.create(cigarros);
-            Log.i("cig", "22222222");
-            Log.i("cig", String.valueOf(cigarros.isSalvo()));
-
-        }
-        cigarrosFumados.setText(Integer.toString(cigarros.getCigarrosDiario()));
-        Log.i("cigarosDiarios2", String.valueOf(cigarros.getCigarrosDiario()));
-        //verificaDia();
-        //cigarroDAO.createOrUpdate(cigarros);
-        dbsqLite.close();*/
-
-
-
-
-    public void subCigarro(View v){
-        if(cigarros.getCigarrosDiario() != 0)
-            cigarros.setCigarrosDiario(cigarros.getCigarrosDiario() - 1);
+        dinheiroEconomizado();
+        dinheiroNaoEconomizado();
+        pontos();
+        grafico();
     }
 
     public void onPause() {
         super.onPause();
         dbsqLite.close();
     }
-        /*System.out.println("Valor do cigarro diario: " + cont);
-        cigarros.setCigarrosDiario(cont);
-        try {
-            cigarroDAO.createOrUpdate(cigarros);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }*/
-
-//        if(cigarros.isSalvo() == true){
-//            try {
-//                cigarroDAO.update(cigarros);
-//                System.out.println("111111");
-//                System.out.println("Salvo é: " + String.valueOf(cigarros.isSalvo()));
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//        }else{
-//            try {
-//                cigarros.setSalvo(true);
-//                cigarroDAO.create(cigarros);
-//                System.out.println("22222");
-//                System.out.println("Salvo é: " + String.valueOf(cigarros.isSalvo()));
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
 
     public void pontuacao(){
 
@@ -362,9 +373,21 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public void pontosGrafico(){
-    }
+    public void popularGrafico() {
+        //ArrayList<Integer> pontosGrafico = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+        //calendar.get(Calendar.DAY_OF_WEEK);
+        calendar.add(Calendar.DAY_OF_WEEK, -1);
+        System.out.println("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG: " + calendar);
+        int pontsGrafico[] = new int[7];
 
+        int j = Calendar.DAY_OF_WEEK;
+        for (int i = 0; i < 7; i++){
+            if(i == j) {
+                pontsGrafico[i] = cigarros.getCigarrosDiario();
+            }
+        }
+    }
     public void verificaDia(){
         Calendar dataAtual = Calendar.getInstance();
 
