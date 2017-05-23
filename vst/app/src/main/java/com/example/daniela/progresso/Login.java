@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.example.daniela.progresso.DAO.DBSQLite;
@@ -244,6 +245,17 @@ public class Login extends AppCompatActivity {
         }
 
     }
+
+    public void loginVST(View v){
+        setContentView(R.layout.login_vst);
+    }
+
+    public void buscarEmailVST(View v){
+
+    }
+
+
+
 
     /*public static User loggedUser(User user){
         AccessToken accessToken = AccessToken.getCurrentAccessToken();

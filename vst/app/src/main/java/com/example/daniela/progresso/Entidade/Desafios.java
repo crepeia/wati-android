@@ -12,8 +12,8 @@ import java.util.Date;
 @DatabaseTable (tableName = "desafio")
 public class Desafios implements Serializable{
 
-    @DatabaseField(columnName = "id", generatedId = true)
-    private int id;
+    @DatabaseField(columnName = "id_desafios", generatedId = true)
+    private long id;
 
     @DatabaseField(columnName = "descricao")
     private String descricao;
@@ -35,6 +35,14 @@ public class Desafios implements Serializable{
         this.tipo = tipo;
         this.pontuacao = pontuacao;
         this.variacao = variacao;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getDescricao() {
@@ -69,12 +77,5 @@ public class Desafios implements Serializable{
         this.variacao = variacao;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 }
 
