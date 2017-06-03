@@ -14,7 +14,7 @@ import java.util.Date;
 public class Acao implements Serializable {
 
     @DatabaseField(columnName = "id_acao", generatedId=true)
-    private int id;
+    private long id;
 
     @DatabaseField(columnName = "ponto")
     private int ponto;
@@ -35,6 +35,14 @@ public class Acao implements Serializable {
         this.data = data;
         this.user = user;
         this.desafio = desafio;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public int getPonto() {

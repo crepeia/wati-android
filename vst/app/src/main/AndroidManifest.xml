@@ -39,7 +39,7 @@
             android:label="@string/title_activity_desafio"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Dicas"
+            android:name=".Orientacao"
             android:label="@string/title_activity_dicas"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

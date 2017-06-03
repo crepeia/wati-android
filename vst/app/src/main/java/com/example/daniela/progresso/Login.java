@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.example.daniela.progresso.DAO.DBSQLite;
@@ -23,6 +24,7 @@ import com.facebook.login.widget.LoginButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
@@ -30,9 +32,11 @@ import org.ksoap2.transport.HttpTransportSE;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+
 
 public class Login extends AppCompatActivity {
 
@@ -46,7 +50,8 @@ public class Login extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        new WebServiceTask().execute();
+        System.out.println("Executando webService");
+       // new WebServiceTask().execute();
 
         //usr = new User();
         dbsqLite = new DBSQLite(Login.this);
@@ -252,6 +257,17 @@ public class Login extends AppCompatActivity {
         }
 
     }
+
+    public void loginVST(View v){
+        setContentView(R.layout.login_vst);
+    }
+
+    public void buscarEmailVST(View v){
+
+    }
+
+
+
 
     /*public static User loggedUser(User user){
         AccessToken accessToken = AccessToken.getCurrentAccessToken();

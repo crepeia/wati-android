@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity
             startActivity(i);
 
         } else if (id == R.id.hint) {
-            Intent i = new Intent(this, Dicas.class);
+            Intent i = new Intent(this, Orientacao.class);
             startActivity(i);
 
         } else if (id == R.id.about) {

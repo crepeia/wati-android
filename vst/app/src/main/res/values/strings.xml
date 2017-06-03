@@ -9,7 +9,7 @@
     <string name="title_activity_login">Login</string>
     <string name="facebook_app_id">1436518353045731</string>
     <string name="title_activity_desafio">Desafio</string>
-    <string name="title_activity_dicas">Dicas</string>
+    <string name="title_activity_dicas">Orientacao</string>
     <string name="title_activity_sobre">Sobre</string>
     <string name="title_activity_logout">Logout</string>
 </resources>
