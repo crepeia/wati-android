@@ -23,8 +23,6 @@ public class User implements Serializable{
     @DatabaseField  (columnName = "email")
     private String email;
 
-    @DatabaseField (columnName = "password")
-    private byte[] password;
 
     @DatabaseField (columnName = "cigarros")
     private Integer cigarros;
@@ -37,11 +35,10 @@ public class User implements Serializable{
 
     public User(){}
 
-    public User(int id, String name, String email, byte[] password, Integer cigarros, String valorMaco, String gender){
+    public User(int id, String name, String email, Integer cigarros, String valorMaco, String gender){
         this.id = id;
         this.name = name;
         this.email = email;
-        this.password = password;
         this.cigarros = cigarros;
         this.valorMaco = valorMaco;
         this.gender = gender;
@@ -69,10 +66,6 @@ public class User implements Serializable{
     public void setEmail(String email) {
         this.email = email;
     }
-
-    public byte[] getPassword() { return password; }
-
-    public void setPassword(byte[] password) { this.password = password; }
 
     public Integer getCigarros() {
         return cigarros;

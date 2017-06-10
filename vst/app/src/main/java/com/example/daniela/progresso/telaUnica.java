@@ -90,10 +90,6 @@ public class telaUnica extends AppCompatActivity {
 
         UserManager.setUser(user);
 
-        // This is how, a reference of DAO object can be done
-       // final Dao<User, Integer> userDao = getHelper().getUserDao();
-
-
         userDAO.update(user);
 
         Log.i("ValorCigarros:", String.valueOf(user.getCigarros()));

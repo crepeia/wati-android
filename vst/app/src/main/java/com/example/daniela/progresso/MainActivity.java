@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -22,6 +23,8 @@ import com.example.daniela.progresso.DAO.CigarrosDAO;
 import com.example.daniela.progresso.DAO.DBSQLite;
 import com.example.daniela.progresso.Entidade.Cigarros;
 import com.example.daniela.progresso.Entidade.User;
+import com.example.daniela.progresso.ws.WebServiceCigarro;
+import com.example.daniela.progresso.ws.WebServiceMediaCigarros;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.series.DataPoint;
@@ -58,8 +61,13 @@ public class MainActivity extends AppCompatActivity
         dataInsercaoCigarro = new ArrayList<>();
 
         dbsqLite = new DBSQLite(MainActivity.this);
+
+        System.out.println("dbsqlite: " + dbsqLite);
         try {
             cigarroDAO = new CigarrosDAO(dbsqLite.getConnectionSource());
+
+            System.out.println("cigarrroDAO: " + cigarroDAO);
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -69,20 +77,28 @@ public class MainActivity extends AppCompatActivity
         System.out.println("Data atual: " + dateAtual.getTime());
 
         try {//No futuro passar essas condições para dentro do DAO
+            System.out.println("entrou no try: ");
+
             List<Cigarros> cigarrosList = cigarroDAO.queryForAll();//filtrar para usuário logado FAZER
-            System.out.println("data do cigarro: " + cigarrosList.get(cigarrosList.size()-1).getDate());
-            if(cigarrosList.isEmpty()) {
+
+            System.out.println("cigarrosList" + cigarrosList);
+
+            //System.out.println("data do cigarro: " + cigarrosList.get(cigarrosList.size()-1).getDate());
+
+            if (cigarrosList.isEmpty()) {
                 System.out.println("lista vazia");
                 cigarros = new Cigarros();
                 cigarros.setUser(UserManager.getUser());
-            }else{
+
+                System.out.println("cigarros diario: " + cigarros.getCigarrosDiario());
+            } else {
                 Calendar c = Calendar.getInstance();
-                c.setTime(cigarrosList.get(cigarrosList.size()-1).getDate());
+                c.setTime(cigarrosList.get(cigarrosList.size() - 1).getDate());
                 System.out.println("calendario");
-                if(dateAtual.get(Calendar.YEAR) == c.get(Calendar.YEAR) && dateAtual.get(Calendar.DAY_OF_YEAR) == c.get(Calendar.DAY_OF_YEAR)){
+                if (dateAtual.get(Calendar.YEAR) == c.get(Calendar.YEAR) && dateAtual.get(Calendar.DAY_OF_YEAR) == c.get(Calendar.DAY_OF_YEAR)) {
                     cigarros = cigarrosList.get(cigarrosList.size() - 1);
                     System.out.println("if");
-                }else{
+                } else {
                     System.out.println("else");
                     cigarros = new Cigarros();
                     cigarros.setUser(UserManager.getUser());
@@ -105,10 +121,10 @@ public class MainActivity extends AppCompatActivity
         adicionaCigarro = (Button) findViewById(R.id.addCigarro);
         subtraiCigarro = (Button) findViewById(R.id.subCigarro);
 
-        cigarrosFumados.setText(Integer.toString(cigarros.getCigarrosDiario()));
+//        cigarrosFumados.setText(Integer.toString(cigarros.getCigarrosDiario()));
 
-        Log.i("Diario:", Integer.toString(cigarros.getCigarrosDiario()));
-        Log.i("Diario:", String.valueOf(cigarros.isSalvo()));
+//        Log.i("Diario:", Integer.toString(cigarros.getCigarrosDiario()));
+        //      Log.i("Diario:", String.valueOf(cigarros.isSalvo()));
 
 
        /* SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -126,9 +142,11 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        grafico();
+    }
 
-        //Gráfico da tela principal:
 
+    public void grafico(){
         GraphView graph = (GraphView) findViewById(R.id.graph);
         graph.setTitle("Cigarros");
 
@@ -147,14 +165,17 @@ public class MainActivity extends AppCompatActivity
         graph.getViewport().setMinX(1);
         graph.getViewport().setMaxX(8);
 
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
-                new DataPoint(0, 1),
-                new DataPoint(1, 5),
-                new DataPoint(2, 3),
-                new DataPoint(3, 2),
-                new DataPoint(4, 6)
-        });
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(generateData(pontos()));
         graph.addSeries(series);
+
+        //LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[]{
+            //new DataPoint(0, 1),
+            //new DataPoint(1, 5),
+            //new DataPoint(2, 3),
+            //new DataPoint(3, 2),
+            //new DataPoint(4, 6)
+        //});
+        //graph.addSeries(series);
 
         LineGraphSeries<DataPoint> series2 = new LineGraphSeries<>(new DataPoint[] {
                 new DataPoint(0, 3),
@@ -171,6 +192,42 @@ public class MainActivity extends AppCompatActivity
 
         graph.getLegendRenderer().setVisible(true);
         graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
+    }
+
+    public int[] pontos(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.get(Calendar.DAY_OF_WEEK);
+        System.out.println("day of week: " + calendar.get(Calendar.DAY_OF_WEEK));
+        //calendar.add(Calendar.DAY_OF_WEEK, -1);
+        int pontsGrafico[] = new int[7];
+
+        int j = calendar.get(Calendar.DAY_OF_WEEK);
+        System.out.println("j:" + j);
+        for (int i = 0; i < 7; i++){
+            if(i == j) {
+                pontsGrafico[i] = cigarros.getCigarrosDiario();
+                System.out.println("cigarros:" + cigarros.getCigarrosDiario());
+                System.out.println("pontsgrauc: " + pontsGrafico[i]);
+                System.out.println("i:" + i);
+            }
+        }
+        return pontsGrafico;
+    }
+
+    public DataPoint[] generateData(int[] pontsGraf){
+        Calendar calendar = Calendar.getInstance();
+        int count = calendar.get(Calendar.DAY_OF_WEEK);
+        System.out.println("Count: " + count);
+
+        DataPoint[] values = new DataPoint[count];
+        for (int i=0; i < (count); i++) {
+            System.out.println("i:" + i);
+            DataPoint v = new DataPoint(i, pontsGraf[i]);
+            System.out.println("v:" + v);
+            values[i] = v;
+            System.out.println("values: " + values[i]);
+        }
+        return values;
     }
 
     @Override
@@ -242,40 +299,46 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public void dinheiroEconomizado(int cigarros){
 
-        //ArrayList<Float> dinheiroEconomizado = new ArrayList<>();
+    public void dinheiroEconomizado() {
+        float valorPorCigarro = 0, economizado = 0;
+        valorPorCigarro = Float.parseFloat(UserManager.getUser().getValorMaco()) / 20;
+        System.out.println("valor por cigarro: " + valorPorCigarro);
+        int cigFum = cigarros.getCigarrosDiario();
+        System.out.println("cigFum: " + cigFum);
+        int nFumados = UserManager.getUser().getCigarros() - cigFum;
+        System.out.println("nFumados: " + nFumados);
 
-        float valorPorCigarro = 0, dinheiroEcon = 0;
-
-        // diferenca entre o que usuário fuma normalmente e a qtd de cigarro fumados no dia
-        int cigarrosNaoFumados = (Integer.parseInt(String.valueOf(UserManager.getUser().getCigarros())) - cigarros);
-
-        if(cigarros > UserManager.getUser().getCigarros()){ //se a qtde de cigarros fumados for maior que oq normalmente fuma
-            dinheiroNãoEconomizado(cigarrosNaoFumados); //chamar esta função passando como parametro o valor alem do que normalmente fuma
+        if(nFumados > 0){
+            economizado = economizado + (nFumados * valorPorCigarro);
+            System.out.println("economizado" + economizado);
+            dinheiroEconomizado.setText("R$ " + economizado + ",00");
+        }else{
+            dinheiroNaoEconomizado();
+            System.out.println("entrou no else");
         }
-
-        valorPorCigarro = (Float.parseFloat(UserManager.getUser().getValorMaco()))/20;
-        dinheiroEcon = (valorPorCigarro * cigarrosNaoFumados) + dinheiroEcon;
-
-        //dinheiroEconomizado.add(dinheiroEcon);
     }
 
-    public void dinheiroNãoEconomizado(int cigarros){
-       // ArrayList<Float> dinheiroNaoEconomizado = new ArrayList<>();
+    public void dinheiroNaoEconomizado(){
+        float valorPorCigarro = 0, nEconomizado=0;
+        valorPorCigarro = Float.parseFloat(UserManager.getUser().getValorMaco())/20;
+        System.out.println("valor por cigarro: " + valorPorCigarro);
+        int cigFum = cigarros.getCigarrosDiario();
+        System.out.println("cigFum: " + cigFum);
+        int Fumados = UserManager.getUser().getCigarros() - cigFum;
+        System.out.println("Fumados: " + Fumados);
 
-        float valorPorCigarro = 0, dinheiroNaoEcon = 0;
-        valorPorCigarro = (Float.parseFloat(UserManager.getUser().getValorMaco()))/20;
-
-        dinheiroNaoEcon = (valorPorCigarro * cigarros) + dinheiroNaoEcon;
-
-        //dinheiroNaoEconomizado.add(dinheiroNaoEcon);
+        if(Fumados < 0){
+            Fumados = Math.abs(Fumados);
+            nEconomizado = nEconomizado + (Fumados * valorPorCigarro);
+            System.out.println("economizado" + nEconomizado);
+            dinheiroNaoEconomizado.setText("R$ " + nEconomizado + ",00");
+        }
     }
 
-    public void addCigarro(View v) throws SQLException, ParseException {
+
+    public void addCigarro(View v) throws SQLException {
         Calendar cal = Calendar.getInstance();
-
-        //SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
         System.out.println("data em formato DATE: " + cal.getTime());
 
         cigarros.setCigarrosDiario(cigarros.getCigarrosDiario() + 1);
@@ -285,74 +348,63 @@ public class MainActivity extends AppCompatActivity
         System.out.println("Valor do cigarro diario: " + cigarros.getCigarrosDiario());
 
         cigarros.setDate(cal.getTime());
+
+
         try {
             System.out.println("id cigarro: " + cigarros.getId());
-
             cigarroDAO.createOrUpdate(cigarros);
         }catch (SQLException e){
             e.printStackTrace();
         }
 
+        dinheiroEconomizado();
+        dinheiroNaoEconomizado();
+        pontos();
+        //grafico();
+
+        System.out.println("DADOS data: " + cigarros.getDate().getTime());
+        System.out.println("DADOS cigarros: " + cigarros.getCigarrosDiario());
+
+        Date d = new Date(1497063621913l * 1000);
+        System.out.println("DADOS data: " + d);
+
+        WebServiceCigarro webServiceCigarro = new WebServiceCigarro(cigarros.getDate(), cigarros.getCigarrosDiario(), "cwsdanipereira@gmail.com");//, UserManager.getUser());
+        webServiceCigarro.execute();
 
     }
 
-        /*if (cigarros.isSalvo() == true) {
-            cigarroDAO.update(cigarros);
-            Log.i("cig", "1111111111");
-            Log.i("cig", String.valueOf(cigarros.isSalvo()));
+    public void subCigarro(View v) throws SQLException {
+        Calendar cal = Calendar.getInstance();
+        if (cigarros.getCigarrosDiario() == 0) {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+
+            alertDialog.setTitle("Você ainda não fumou cigarros hoje!");
+        } else {
+            if (cigarros.getCigarrosDiario() != 0) {
+                cigarros.setCigarrosDiario(cigarros.getCigarrosDiario() - 1);
+                cigarrosFumados.setText(Integer.toString(cigarros.getCigarrosDiario()));
+                cigarros.setDate(cal.getTime());
+                try {
+                    cigarroDAO.update(cigarros);
+                    //cigarroDAO.createOrUpdate(cigarros);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        else {
-            cigarros.setSalvo(true);
-            cigarroDAO.create(cigarros);
-            Log.i("cig", "22222222");
-            Log.i("cig", String.valueOf(cigarros.isSalvo()));
+        dinheiroEconomizado();
+        dinheiroNaoEconomizado();
+        pontos();
+        grafico();
 
-        }
-        cigarrosFumados.setText(Integer.toString(cigarros.getCigarrosDiario()));
-        Log.i("cigarosDiarios2", String.valueOf(cigarros.getCigarrosDiario()));
-        //verificaDia();
-        //cigarroDAO.createOrUpdate(cigarros);
-        dbsqLite.close();*/
-
-
-
-
-    public void subCigarro(View v){
-        if(cigarros.getCigarrosDiario() != 0)
-            cigarros.setCigarrosDiario(cigarros.getCigarrosDiario() - 1);
     }
+
 
     public void onPause() {
         super.onPause();
+        grafico();
         dbsqLite.close();
     }
-        /*System.out.println("Valor do cigarro diario: " + cont);
-        cigarros.setCigarrosDiario(cont);
-        try {
-            cigarroDAO.createOrUpdate(cigarros);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }*/
-
-//        if(cigarros.isSalvo() == true){
-//            try {
-//                cigarroDAO.update(cigarros);
-//                System.out.println("111111");
-//                System.out.println("Salvo é: " + String.valueOf(cigarros.isSalvo()));
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//        }else{
-//            try {
-//                cigarros.setSalvo(true);
-//                cigarroDAO.create(cigarros);
-//                System.out.println("22222");
-//                System.out.println("Salvo é: " + String.valueOf(cigarros.isSalvo()));
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
 
     public void pontuacao(){
 

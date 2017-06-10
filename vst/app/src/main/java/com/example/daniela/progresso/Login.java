@@ -1,6 +1,7 @@
 package com.example.daniela.progresso;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.example.daniela.progresso.DAO.DBSQLite;
+import com.example.daniela.progresso.DAO.DicasDAO;
 import com.example.daniela.progresso.DAO.UserDAO;
 import com.example.daniela.progresso.Entidade.User;
 import com.example.daniela.progresso.ws.WebServiceTask;
@@ -36,6 +38,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 
 public class Login extends AppCompatActivity {
@@ -43,6 +46,7 @@ public class Login extends AppCompatActivity {
     private DBSQLite dbsqLite;
     private UserDAO userDAO;
     LoginButton loginButton;
+    User usr;
 
     CallbackManager callbackManager;
 
@@ -50,17 +54,28 @@ public class Login extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        System.out.println("Executando webService");
-       // new WebServiceTask().execute();
+        //System.out.println("Executando webService");
+        //new WebServiceTask().execute();
+
 
         //usr = new User();
         dbsqLite = new DBSQLite(Login.this);
 
+
+        System.out.println("DAO User1: " + userDAO);
+
         try {
             userDAO = new UserDAO(dbsqLite.getConnectionSource());
+
+            System.out.println("DAO User2: " + userDAO);
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        usr = new User();
+
+        System.out.println("dbsqlite: " + dbsqLite);
+        System.out.println("DAO User: " + userDAO);
+
 
         FacebookSdk.setApplicationId("1436518353045731");
         FacebookSdk.sdkInitialize(getApplicationContext());
@@ -76,6 +91,10 @@ public class Login extends AppCompatActivity {
             public void onSuccess(LoginResult loginResult) {
                 //User user = UserManager.getUser();
                 setFacebookData(loginResult);
+
+
+
+
 
               /*  User user = UserManager.getUser();
 
@@ -146,38 +165,21 @@ public class Login extends AppCompatActivity {
 
                             User user = new User();
 
-                            //Log.i("Manager2: ", UserManager.getUser().getName());
-                            //Log.i("Manager2: ", UserManager.getUser().getEmail());
-
                             user.setName(firstName);
                             user.setEmail(email);
                             user.setGender(gender);
 
-                           // Log.i("Manager3: ", user.getName());
-                            //Log.i("Manager3: ", user.getEmail());
+                            Log.i("Manager3: ", user.getName());
+                            Log.i("Manager3: ", user.getEmail());
 
                             UserManager.setUser(user);
-                            //Log.i("Manager4: ", UserManager.getUser().getName());
-                            //Log.i("Manager4: ", UserManager.getUser().getEmail());
+                            Log.i("Manager4: ", UserManager.getUser().getName());
+                            Log.i("Manager4: ", UserManager.getUser().getEmail());
 
+                            System.out.println("objeto user: " + user);
 
-                            //Log.i("Login" + "Id", id);
-/*
-                            Log.i("Login" + "Email", email);
-                            Log.i("Login"+ "FirstName", firstName);
-                            Log.i("Login" + "LastName", lastName);
-                            Log.i("Login" + "Gender", gender);
-
-                            Log.i("LogX" , user.getName());
-                            Log.i("LogX" , user.getEmail());
-                            Log.i("LogX" , user.getGender());
-                            Log.i("LogX" , String.valueOf(user.getId()));*/
-                            //UserManager.logFacebook(user);
-                            //UserManager.setUser(UserManager.logFacebook(user));
-
-
-                            //Log.i("Manager1: ", UserManager.getUser().getName());
-                            //Log.i("Manager1: ", UserManager.getUser().getEmail());
+                            System.out.println("Name:" + user.getName());
+                            System.out.println("Email:" + user.getEmail());
 
 
                             try {
@@ -255,15 +257,32 @@ public class Login extends AppCompatActivity {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 
     public void loginVST(View v){
         setContentView(R.layout.login_vst);
     }
 
-    public void buscarEmailVST(View v){
+    public void buscarEmailVST(View v) throws ExecutionException, InterruptedException, SQLException {
 
+        WebServiceTask ws = new WebServiceTask("cwsdanipereira@gmail.com");
+        User user;
+        user = ws.execute().get();
+        System.out.println("User de retorno: " + user);
+        System.out.println("User de retorno: " + user.getName());
+        System.out.println("User de retorno: " + user.getGender());
+        System.out.println("User de retorno: " + user.getEmail());
+
+        List<User> usrLista = userDAO.queryForEq("email", user.getEmail());
+        if(usrLista.isEmpty()) {
+            System.out.println("É novo");
+            userDAO.create(user);//verificar se é novo
+            System.out.println("É novo");
+        }else {
+            System.out.println("Não É novo");
+            userDAO.update(user);
+            System.out.println("Não É novo");
+        }
     }
 
 

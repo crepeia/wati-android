@@ -8,6 +8,7 @@ import com.example.daniela.progresso.Entidade.User;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
+import org.ksoap2.transport.HttpResponseException;
 import org.ksoap2.transport.HttpTransportSE;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -17,54 +18,86 @@ import java.io.IOException;
  * Created by hedersb on 5/15/17.
  */
 
-public class WebServiceTask extends AsyncTask<String, Void, Boolean> {
+public class WebServiceTask extends AsyncTask<String, Void, User> {
 
     private Exception exception;
+    String email;
 
-    /*public User verifica(String email){
-        //data required by the web service
+    public WebServiceTask(String email){
+        this.email = email;
+    }
+
+    protected void onPostExecute() {
+        // TODO: check this.exception
+        // TODO: do something with the feed
+    }
+
+    @Override
+    protected User doInBackground(String... params) {
         String namespace = "http://ws.wati/";
-        String method = "validate2";
-        String url = "http://192.168.2.108:31932/wati/AppWebService";
+        String method = "validate";
+        String url = "http://192.168.0.103:8080/wati/AppWebService?wsdl";
         String actionURL = "";
 
+        //dados que serão submetidos ao servidor
         User user = new User();
-        user.setEmail(email);
 
 
-        // Creating a SOAP object
+        System.out.println("ws email: " + email);
+        //criando o objeto SOAP
         SoapObject soap = new SoapObject(namespace, method);
-        //Parameters
-        soap.addProperty("email", user.getEmail());
-        //Create an envelope
+
+        //parametros
+        soap.addProperty("email", email);
+        System.out.println("ws email: " + email);
+        //soap.addProperty("password", password);
+
+        //Criando o envelope
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
         envelope.setOutputSoapObject(soap);
 
-        Log.i("WebService", "Testing the webservice for validating the authentication of the users.");
+        Log.i("webServiceUser", "Testando o webservice");
 
-        //Creating a transport via HTTP
-        HttpTransportSE httpTransport = new HttpTransportSE(url);
-
-        try {
-            httpTransport.debug = true;
-            httpTransport.call(actionURL, envelope);
+        //Criando um transporte via HTTP
+        HttpTransportSE httpTransportSE = new HttpTransportSE(url);
+        try{
+            httpTransportSE.debug = true;
+            httpTransportSE.call(actionURL, envelope);
             Object msg = envelope.getResponse();
+            Log.i("WebService",  "Response: " + msg);
+            SoapObject soapObject = (SoapObject) msg;
 
-            Log.d("WebService", "Response: " + msg);
-        } catch (IOException e) {
+            Log.i("User retornado: " , String.valueOf(soapObject.getProperty("email")));
+
+            Log.i("User retornado: " , String.valueOf(soapObject.getProperty("name")));
+
+            Log.i("User retornado: " , String.valueOf(soapObject.getProperty("gender")));
+
+            //criar classe que transforma soapobject em User
+            user.setEmail(String.valueOf(soapObject.getProperty("email")));
+            user.setName(String.valueOf(soapObject.getProperty("name")));
+            user.setGender(String.valueOf(soapObject.getProperty("gender")));
+            //...
+
+        } catch (HttpResponseException e) {
             e.printStackTrace();
         } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
         return user;
-    }*/
+    }
+}
 
-    protected Boolean doInBackground(String... urls) {
+
+
+   /* protected Boolean doInBackground(String... urls) {
         //data required by the web service
         String namespace = "http://ws.wati/";
         String method = "validate";
-        String url = "http://10.5.107.169:8080/wati/AppWebService?wsdl";
+        String url = "http://192.168.0.103:8080/wati/AppWebService?wsdl";
         String actionURL = "";
 
         //data to be submited to the service
@@ -100,9 +133,9 @@ public class WebServiceTask extends AsyncTask<String, Void, Boolean> {
         }
 
         return true;
-    }
+    }*/
 
-    public boolean sendUserFacebook(User user) {
+   /* public boolean sendUserFacebook(User user) {
         //data required by the web service
         String namespace = "http://ws.wati/";
         String method = "retornaMedia";
@@ -181,10 +214,5 @@ public class WebServiceTask extends AsyncTask<String, Void, Boolean> {
         }
 
         return 0;
-    }
+    }*/
 
-    protected void onPostExecute() {
-        // TODO: check this.exception
-        // TODO: do something with the feed
-    }
-}
