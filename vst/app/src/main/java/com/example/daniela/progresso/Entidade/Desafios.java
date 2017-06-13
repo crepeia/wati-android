@@ -15,6 +15,9 @@ public class Desafios implements Serializable{
     @DatabaseField(columnName = "id_desafios", generatedId = true)
     private long id;
 
+    @DatabaseField(columnName = "titulo")
+    private String titulo;
+
     @DatabaseField(columnName = "descricao")
     private String descricao;
 
@@ -30,7 +33,8 @@ public class Desafios implements Serializable{
     public Desafios(){
     }
 
-    public Desafios(String descricao, int tipo, int pontuacao, int variacao){
+    public Desafios(String titulo, String descricao, int tipo, int pontuacao, int variacao){
+        this.titulo = titulo;
         this.descricao = descricao;
         this.tipo = tipo;
         this.pontuacao = pontuacao;
@@ -43,6 +47,14 @@ public class Desafios implements Serializable{
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
     }
 
     public String getDescricao() {

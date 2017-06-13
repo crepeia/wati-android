@@ -18,12 +18,12 @@ import java.io.IOException;
  * Created by hedersb on 5/15/17.
  */
 
-public class WebServiceTask extends AsyncTask<String, Void, User> {
+public class WSLoginSite extends AsyncTask<String, Void, User> {
 
     private Exception exception;
     String email;
 
-    public WebServiceTask(String email){
+    public WSLoginSite(String email){
         this.email = email;
     }
 

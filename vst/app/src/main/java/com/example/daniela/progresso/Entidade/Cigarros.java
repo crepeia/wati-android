@@ -18,8 +18,8 @@ public class Cigarros implements Serializable {
     @DatabaseField(columnName = "data")
     private Date date;
 
-    @DatabaseField(columnName = "salvo")
-    private boolean salvo;
+    @DatabaseField(columnName = "nao_fumou")
+    private boolean naoFumou;
 
     @DatabaseField(columnName = "cigarros_diario")
     private int cigarrosDiario;
@@ -30,9 +30,9 @@ public class Cigarros implements Serializable {
     public Cigarros(){
     }
 
-    public Cigarros(Date date, boolean salvo, int cigarrosDiario, User user) {
+    public Cigarros(Date date, boolean naoFumou, int cigarrosDiario, User user) {
         this.date = date;
-        this.salvo = salvo;
+        this.naoFumou = naoFumou;
         this.cigarrosDiario = cigarrosDiario;
         this.user = user;
     }
@@ -53,6 +53,14 @@ public class Cigarros implements Serializable {
         this.date = date;
     }
 
+    public boolean isNaoFumou() {
+        return naoFumou;
+    }
+
+    public void setNaoFumou(boolean naoFumou) {
+        this.naoFumou = naoFumou;
+    }
+
     public int getCigarrosDiario() {
         return cigarrosDiario;
     }
@@ -67,13 +75,5 @@ public class Cigarros implements Serializable {
 
     public void setUser(User user) {
         this.user = user;
-    }
-
-    public boolean isSalvo() {
-        return salvo;
-    }
-
-    public void setSalvo(boolean salvo) {
-        this.salvo = salvo;
     }
 }

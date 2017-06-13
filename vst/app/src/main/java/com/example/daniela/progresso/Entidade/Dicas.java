@@ -4,6 +4,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Created by daniela on 20/05/17.
@@ -20,6 +21,9 @@ public class Dicas implements Serializable {
     @DatabaseField(columnName = "lida")
     private boolean lida;
 
+    @DatabaseField(columnName = "data")
+    private Date date;
+
     @DatabaseField(columnName = "gostou")
     private boolean gostou;
 
@@ -28,9 +32,10 @@ public class Dicas implements Serializable {
 
     public Dicas(){ }
 
-    public Dicas(String descricao, boolean lida,boolean gostou, User user){
+    public Dicas(String descricao, boolean lida, Date data, boolean gostou, User user){
         this.descricao = descricao;
         this.lida = lida;
+        this.date = data;
         this.gostou = gostou;
         this.user = user;
     }
@@ -57,6 +62,14 @@ public class Dicas implements Serializable {
 
     public void setLida(boolean lida) {
         this.lida = lida;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     public boolean isGostou() { return gostou; }

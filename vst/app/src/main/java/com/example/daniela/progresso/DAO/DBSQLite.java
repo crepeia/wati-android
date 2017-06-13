@@ -5,9 +5,12 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.example.daniela.progresso.Desafio;
 import com.example.daniela.progresso.Entidade.Acao;
 import com.example.daniela.progresso.Entidade.Cigarros;
 import com.example.daniela.progresso.Entidade.Desafios;
+import com.example.daniela.progresso.Entidade.Dicas;
+import com.example.daniela.progresso.Entidade.Pontos;
 import com.example.daniela.progresso.Entidade.User;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
@@ -24,12 +27,14 @@ public class DBSQLite extends OrmLiteSqliteOpenHelper {
     // Campos
 
     public static final String DB_NAME = "watiAndroid.db";
-    private static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 6;
 
     private Dao<User, Integer> userDao;
     private Dao<Acao, Integer> acaoDao;
     private Dao<Cigarros, Integer> cigarrosDao;
     private Dao<Desafios, Integer> desafioDao;
+    private Dao<Dicas, Integer> dicasDao;
+    private Dao<Pontos, Integer> pontosDao;
 
     // Métodos públicos
 
@@ -47,6 +52,8 @@ public class DBSQLite extends OrmLiteSqliteOpenHelper {
             TableUtils.createTable(connectionSource, Acao.class);
             TableUtils.createTable(connectionSource, Cigarros.class);
             TableUtils.createTable(connectionSource, Desafios.class);
+            TableUtils.createTable(connectionSource, Dicas.class);
+            TableUtils.createTable(connectionSource, Pontos.class);
 
         } catch (SQLException e) {
             Log.e(DBSQLite.class.getName(), "Unable to create datbases", e);
@@ -69,6 +76,8 @@ public class DBSQLite extends OrmLiteSqliteOpenHelper {
             TableUtils.dropTable(connectionSource, Acao.class, true);
             TableUtils.dropTable(connectionSource, Cigarros.class, true);
             TableUtils.dropTable(connectionSource, Desafios.class, true);
+            TableUtils.dropTable(connectionSource, Dicas.class, true);
+            TableUtils.dropTable(connectionSource, Pontos.class, true);
             onCreate(db, connectionSource);
 
         } catch (SQLException e) {
@@ -90,25 +99,39 @@ public class DBSQLite extends OrmLiteSqliteOpenHelper {
         return userDao;
     }
 
-    public Dao getAcaoDao() throws SQLException, java.sql.SQLException {
+    public Dao<Acao, Integer> getAcaoDao() throws SQLException, java.sql.SQLException {
         if (acaoDao == null){
             acaoDao = getDao(Acao.class);
         }
         return acaoDao;
     }
 
-    public Dao getCigarroDao() throws SQLException, java.sql.SQLException {
+    public Dao<Cigarros, Integer> getCigarroDao() throws SQLException, java.sql.SQLException {
         if (cigarrosDao == null){
             cigarrosDao = getDao(Cigarros.class);
         }
         return cigarrosDao;
     }
 
-    public Dao getDesafioDao() throws SQLException, java.sql.SQLException {
+    public Dao<Desafios, Integer> getDesafioDao() throws SQLException, java.sql.SQLException {
         if (desafioDao == null){
             desafioDao = getDao(Desafios.class);
         }
         return desafioDao;
+    }
+
+    public Dao<Dicas, Integer> getDicasDao() throws SQLException, java.sql.SQLException {
+        if (dicasDao == null){
+            dicasDao = getDao(Dicas.class);
+        }
+        return dicasDao;
+    }
+
+    public Dao<Pontos, Integer> getPontosDao() throws java.sql.SQLException {
+        if(pontosDao == null){
+            pontosDao = getDao(Pontos.class);
+        }
+        return  pontosDao;
     }
 }
 

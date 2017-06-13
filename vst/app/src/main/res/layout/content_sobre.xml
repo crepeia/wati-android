@@ -20,7 +20,8 @@
         android:layout_marginTop="39dp"
         android:id="@+id/imageView"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="linkSite"/>
 
     <TextView
         android:text="Viva Sem Tabaco"
@@ -41,7 +42,10 @@
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
         android:autoLink="web"
-        android:id="@+id/textView5" />
+        android:id="@+id/textView5"
+        android:inputType="textUri"
+        android:onClick="linkSite"
+        />
 
     <TextView
         android:text="Aplicativo desenvolvido como Trabalho de Conclusão de Curso de Engenharia Computacional na Universidade Federal de Juiz de Fora - UFJF"
@@ -54,4 +58,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="56dp"
         android:id="@+id/textView6" />
+
+
+
 </RelativeLayout>

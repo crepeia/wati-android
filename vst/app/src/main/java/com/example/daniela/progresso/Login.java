@@ -8,11 +8,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.example.daniela.progresso.DAO.AcaoDAO;
 import com.example.daniela.progresso.DAO.DBSQLite;
+import com.example.daniela.progresso.DAO.DesafioDAO;
 import com.example.daniela.progresso.DAO.DicasDAO;
 import com.example.daniela.progresso.DAO.UserDAO;
+import com.example.daniela.progresso.Entidade.Acao;
+import com.example.daniela.progresso.Entidade.Desafios;
 import com.example.daniela.progresso.Entidade.User;
-import com.example.daniela.progresso.ws.WebServiceTask;
+import com.example.daniela.progresso.ws.WSFacebook;
+import com.example.daniela.progresso.ws.WSLoginSite;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -37,6 +42,7 @@ import java.io.IOException;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -45,8 +51,12 @@ public class Login extends AppCompatActivity {
 
     private DBSQLite dbsqLite;
     private UserDAO userDAO;
+    private DesafioDAO desafioDAO;
+    private AcaoDAO acaoDAO;
     LoginButton loginButton;
     User usr;
+    Acao acao;
+    Desafios desafio;
 
     CallbackManager callbackManager;
 
@@ -61,20 +71,22 @@ public class Login extends AppCompatActivity {
         //usr = new User();
         dbsqLite = new DBSQLite(Login.this);
 
-
-        System.out.println("DAO User1: " + userDAO);
-
         try {
             userDAO = new UserDAO(dbsqLite.getConnectionSource());
-
-            System.out.println("DAO User2: " + userDAO);
+            desafioDAO = new DesafioDAO(dbsqLite.getConnectionSource());
+            acaoDAO = new AcaoDAO(dbsqLite.getConnectionSource());
         } catch (SQLException e) {
             e.printStackTrace();
         }
         usr = new User();
+        desafio = new Desafios();
+        acao = new Acao();
 
-        System.out.println("dbsqlite: " + dbsqLite);
-        System.out.println("DAO User: " + userDAO);
+        try {
+            salvaDesafios();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
 
         FacebookSdk.setApplicationId("1436518353045731");
@@ -89,29 +101,7 @@ public class Login extends AppCompatActivity {
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                //User user = UserManager.getUser();
                 setFacebookData(loginResult);
-
-
-
-
-
-              /*  User user = UserManager.getUser();
-
-                Log.i("Manager1: ", user.getName());
-                Log.i("Manager1: ", user.getEmail());
-
-
-
-                try {
-                    userDAO.create(user);//verificar se é novo
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                dbsqLite.close();
-
-                redirecionarUsuario(user);*/
-
             }
 
             @Override
@@ -169,17 +159,10 @@ public class Login extends AppCompatActivity {
                             user.setEmail(email);
                             user.setGender(gender);
 
-                            Log.i("Manager3: ", user.getName());
-                            Log.i("Manager3: ", user.getEmail());
-
                             UserManager.setUser(user);
                             Log.i("Manager4: ", UserManager.getUser().getName());
                             Log.i("Manager4: ", UserManager.getUser().getEmail());
 
-                            System.out.println("objeto user: " + user);
-
-                            System.out.println("Name:" + user.getName());
-                            System.out.println("Email:" + user.getEmail());
 
 
                             try {
@@ -191,12 +174,43 @@ public class Login extends AppCompatActivity {
                             } catch (SQLException e) {
                                 e.printStackTrace();
                             }
-                            dbsqLite.close();
 
+                            //WSFacebook webServiceFacebook = new WSFacebook(user.getName(), user.getEmail(), user.getGender());
+                            //webServiceFacebook.execute();
+
+                            System.out.println("começando");
+                            /*List<Acao> acaoList = acaoDAO.queryForEq("user_id", UserManager.getUser().getId());
+                            System.out.println("1111111111");
+                            System.out.println(UserManager.getUser().getId());
+                            System.out.println(acaoList.size());
+                            for(Acao a : acaoList) {
+                                System.out.println("22222222");
+                                if (a.getUser().getEmail() == UserManager.getUser().getEmail()) {
+                                    System.out.println("3333333");
+                                    if (a.getDesafio().getDescricao() == "Fazer cadastro no app") {
+                                        System.out.println("Usuário já ganhou ponto por fazer cadstro no app");
+                                    } else {
+                                        System.out.println("Não ganhu ponto");
+                                        contabilizaAcaoCadastroApp();
+                                    }
+                                }
+                            }*/
+                            List<Acao> acaoList = acaoDAO.queryForAll();
+                            if(acaoList.isEmpty()){
+                                System.out.println("acaodao vazio");
+                                contabilizaAcaoCadastroApp();
+                            }else{
+                                System.out.println("acaodao diferente de vazio");
+                            }
+
+
+                            dbsqLite.close();
                             redirecionarUsuario(user);
 
 
                         } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (SQLException e) {
                             e.printStackTrace();
                         }
                     }
@@ -265,7 +279,7 @@ public class Login extends AppCompatActivity {
 
     public void buscarEmailVST(View v) throws ExecutionException, InterruptedException, SQLException {
 
-        WebServiceTask ws = new WebServiceTask("cwsdanipereira@gmail.com");
+        WSLoginSite ws = new WSLoginSite("cwsdanipereira@gmail.com");
         User user;
         user = ws.execute().get();
         System.out.println("User de retorno: " + user);
@@ -283,6 +297,93 @@ public class Login extends AppCompatActivity {
             userDAO.update(user);
             System.out.println("Não É novo");
         }
+    }
+
+    public void salvaDesafios() throws SQLException {
+        String[] titulo = new String[]{"Visitar o site do Viva Sem Tabaco",
+                "Visualizar dicas diariamente",
+                "Não fumar",
+                "Preencher no site o plano para parar ",
+                "Fazer cadastro no aplicativo",
+                "Completar cadastro no site",
+                "Completar o teste Fagerstrom no site",
+                "Informar diariamente a quantidade de cigarros fumados"};
+
+        String[] descricao = new String[]{"Link encontrado no menu do aplicativo, na categoria Sobre.",
+                "Dicas encontrado no menu do aplicativo, na categoria Dicas.",
+                "Não fumar nenhum cigarro durante todo o dia.",
+                "O plano para parar é um plano. ",
+                "O cadastro no aplicativo já foi computado ao logar.",
+                "O cadastro se encontra no site do Viva Sem Tabaco.",
+                "O teste Fagerstrom é um teste de dependência à nicotina, você pode encontrá-lo no site do Viva Sem Tabaco.",
+                "Diariamente você pode informar a quantidade de cigarros fumados no aplicativo. Esta função se encontra na tela principal na opção \"Cigarros fumados hoje\"."};
+
+
+        int vetorPontuação[] = {5, 5, 7, 10, 10, 4, 4, 5}; //pontos de cada desafio
+
+        int vetorTipo[] = {2, 1, 1, 2, 2, 2, 2, 1}; //diz se a pontuação é continua ou não. 1 é contínua, 2 não é contínua
+
+        int vetorVariacao[] = {0, 2, 3, 0, 0, 0, 0, 3}; //o incremento de cada desafio, caso seja continuo
+
+        List<Desafios> desafiosList = desafioDAO.queryForAll();
+        if (desafiosList.isEmpty()) {
+            System.out.println("DAO de desafios está vazio!!!");
+            for (int i = 0; i < titulo.length; i++) {
+                desafio.setTitulo(titulo[i]);
+                desafio.setDescricao(descricao[i]);
+                desafio.setPontuacao(vetorPontuação[i]);
+                desafio.setTipo(vetorTipo[i]);
+                desafio.setVariacao(vetorVariacao[i]);
+
+                System.out.println(desafio.getTitulo());
+                System.out.println(desafio.getDescricao());
+                System.out.println(desafio.getTipo());
+                System.out.println(desafio.getVariacao());
+
+                try {
+                    System.out.println("create");
+                    desafioDAO.create(desafio);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }else {
+            System.out.println("DAO desafios diferente de vazio");
+            System.out.println("desafio: " + desafioDAO);
+
+        }
+    }
+
+    public void contabilizaAcaoCadastroApp(){
+        Acao acao = new Acao();
+        try {
+            List<Desafios> desafiosList = desafioDAO.queryForEq("titulo", "Fazer cadastro no aplicativo");
+            for (Desafios d : desafiosList){
+                System.out.println(d.getTitulo());
+                System.out.println(d.getDescricao());
+                System.out.println(d.getPontuacao());
+                System.out.println(d.getTipo());
+                System.out.println(d.getVariacao());
+
+                //if(d.getTipo() == 2) { //não é contínua a pontuação! Se não é contínua então não tem variação.
+                acao.setPonto(d.getPontuacao());
+                acao.setUser(UserManager.getUser());
+                acao.setData(Calendar.getInstance().getTime());
+                acao.setDesafio(desafiosList.get(0));
+
+                System.out.println("desafiosList.get(0)" + desafiosList.get(0).getTitulo());
+                System.out.println("UserManager.getUser()" + UserManager.getUser().getEmail());
+                //acaoDAO.createOrUpdate(acao);
+            }//else{      É CONTINUA, ENTAO CALCULAR OS PONTOS PARA CONTINUA.
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("ACAO: " + acao.getUser().getEmail());
+        System.out.println("ACAO: " + acao.getData());
+        System.out.println("ACAO: " + acao.getDesafio().getTitulo());
+        System.out.println("ACAO: " + acao.getPonto());
+
     }
 
 

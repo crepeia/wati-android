@@ -18,9 +18,11 @@ import com.example.daniela.progresso.DAO.DesafioDAO;
 
 import com.example.daniela.progresso.Entidade.Acao;
 import com.example.daniela.progresso.Entidade.Desafios;
+import com.example.daniela.progresso.Entidade.User;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Desafio extends AppCompatActivity {
 
@@ -33,6 +35,9 @@ public class Desafio extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_desafio);
 
+        ListView listaDesafios= (ListView) findViewById(R.id.listDesafios);
+
+
         desafios = new Desafios();
         dbsqLite = new DBSQLite(Desafio.this);
         try {
@@ -41,108 +46,88 @@ public class Desafio extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        try {
-            salvaDesafios();
+        /*try {
+            //salvaDesafios();
+            preencheDicas();
         } catch (SQLException e) {
             e.printStackTrace();
-        }
+        }*/
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, preencheDicas());
+
+        listaDesafios.setAdapter(adapter);
+
+
     }
 
     public void salvaDesafios() throws SQLException {
-        String[] values = new String[] { "Visitar site",
-                "Ver dicas",
-                "Ficar dias sem fumar",
-                "Preencher plano para parar",
-                "Fazer cadastro no app",
-                "Completar cadastro",
-                "Completar Fargestron",
-                "Informar o registro diário"};
+        String[] titulo = new String[]{"Visitar o site do Viva Sem Tabaco",
+                "Visualizar dicas diariamente",
+                "Não fumar",
+                "Preencher no site o plano para parar ",
+                "Fazer cadastro no aplicativo",
+                "Completar cadastro no site",
+                "Completar o teste Fagerstrom no site",
+                "Informar diariamente a quantidade de cigarros fumados"};
 
-        int vetorPontuação[] = {1, 2, 3, 4, 5, 6, 7, 8}; //pontos de cada desafio
+        String[] descricao = new String[]{"Link encontrado no menu do aplicativo, na categoria Sobre.",
+                "Dicas encontrado no menu do aplicativo, na categoria Dicas.",
+                "Não fumar nenhum cigarro durante todo o dia.",
+                "O plano para parar é um plano. ",
+                "O cadastro no aplicativo já foi computado ao logar.",
+                "O cadastro se encontra no site do Viva Sem Tabaco.",
+                "O teste Fagerstrom é um teste de dependência à nicotina, você pode encontrá-lo no site do Viva Sem Tabaco.",
+                "Diariamente você pode informar a quantidade de cigarros fumados no aplicativo. Esta função se encontra na tela principal na opção \"Cigarros fumados hoje\"."};
 
-        int vetorTipo[] = {1, 1, 2, 2, 1, 2, 2, 2}; //diz se a pontuação é continua ou não. 1 é contínua, 2 não é contínua
 
-        int vetorVariacao[] = {0, 1, 1, 0, 0, 0, 0, 1}; //o incremento de cada desafio, caso seja continuo
+        int vetorPontuação[] = {5, 5, 7, 10, 10, 4, 4, 5}; //pontos de cada desafio
 
-        if(desafioDAO == null)
-            System.out.println("hahahhahahah");
-        else
+        int vetorTipo[] = {2, 1, 1, 2, 2, 2, 2, 1}; //diz se a pontuação é continua ou não. 1 é contínua, 2 não é contínua
+
+        int vetorVariacao[] = {0, 2, 3, 0, 0, 0, 0, 3}; //o incremento de cada desafio, caso seja continuo
+
+        List<Desafios> desafiosList = desafioDAO.queryForAll();
+        if (desafiosList.isEmpty()) {
+            System.out.println("DAO de desafios está vazio!!!");
+            for (int i = 0; i < titulo.length; i++) {
+                desafios.setTitulo(titulo[i]);
+                desafios.setDescricao(descricao[i]);
+                desafios.setPontuacao(vetorPontuação[i]);
+                desafios.setTipo(vetorTipo[i]);
+                desafios.setVariacao(vetorVariacao[i]);
+
+                System.out.println(desafios.getTitulo());
+                System.out.println(desafios.getDescricao());
+                System.out.println(desafios.getTipo());
+                System.out.println(desafios.getVariacao());
+
+                try {
+                    desafioDAO.update(desafios);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }else {
+            System.out.println("DAO desafios diferente de vazio");
             System.out.println("desafio: " + desafioDAO);
-        /*for (int i = 0; i < values.length; i++){
-            desafios.setDescricao(values[i]);
-            desafios.setPontuacao(vetorPontuação[i]);
-            desafios.setTipo(vetorTipo[i]);
-            desafios.setVariacao(vetorVariacao[i]);
 
-            try {
-                desafioDAO.create(desafios);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }*/
+        }
     }
 
+    public ArrayList<String> preencheDicas(){
+        try {
+            List<Desafios> desafiosList = desafioDAO.queryForAll();
+            ArrayList<String> desafios = new ArrayList<>();
+
+            for(Desafios d : desafiosList) {
+                desafios.add(d.getDescricao());
+            }
+            return desafios;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }
-       /* final ListView listview = (ListView) findViewById(R.id.listDesafios);
-        String[] values = new String[] { "Visitar site",
-                "Ver dicas",
-                "Ficar dias sem fumar",
-                "Preencher plano para parar",
-                "Fazer cadastro no app",
-                "Completar cadastro",
-                "Completar Fargestron",
-                "Informar o registro diário"};
-
-
-
-
-        final ArrayList<String> list = new ArrayList<String>();
-
-        for (int i = 0; i < values.length; ++i) {
-            list.add(values[i]);
-        }
-
-        int vetorPontuação[] = {1, 2, 3, 4, 5, 6, 7, 8};
-
-        int vetorTipo[] = {1, 1, 3, 2, 1, 3, 2, 2};
-
-        int vetorVariacao[] = {0, 1, 1, 0, 0, 0, 0, 1};
-//
-
-
-        for (int j = 0; j < values.length; j++){ //fazer isso só uma vez
-            desafios.setDescricao(values[j]);
-            desafios.setPontuacao(vetorPontuação[j]);
-            desafios.setTipo(vetorTipo[j]);
-            desafios.setVariacao(vetorVariacao[j]);*/
-
-            /*try {
-                desafioDAO.create(desafios);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }*/
-
-
-//            desafios.setPontuacao(20);
-//            desafios.setTipo(1);
-//            desafios.setVariacao(1);
-
-/*        }
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list);
-
-
-        listview.setAdapter(adapter);
-
-
-    }
-
-   /* public void carregaDescricaoBD(ArrayList<String> arrayList) throws SQLException {
-        int i;
-        for (i = 0; i < arrayList.size(); i++){
-            desafios.setDescricao(arrayList.get(i));
-            desafioDAO.create(desafios);
-        }
-    }*/
-
-
-//}

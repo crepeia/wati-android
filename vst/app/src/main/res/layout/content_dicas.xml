@@ -10,18 +10,61 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.daniela.progresso.Dicas"
+    tools:context="com.example.daniela.progresso.Orientacao"
     tools:showIn="@layout/activity_dicas">
 
+
+    <TextView
+        android:id="@+id/textView13"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dica de hoje"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:textColor="@drawable/com_facebook_button_background"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentTop="true">
+        android:orientation="horizontal"
+        android:layout_below="@+id/textView13"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="120dp">
 
 
-
-
+        <TextView
+            android:id="@+id/dica"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="TextView" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/gostei"
+        android:layout_width="110dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="38dp"
+        android:layout_toStartOf="@+id/textView13"
+        android:text="Gostei"
+        android:onClick="ButtonGostei"/>
+
+    <Button
+        android:id="@+id/naoGostei"
+        android:layout_width="110dp"
+        android:layout_height="50dp"
+        android:layout_alignTop="@+id/gostei"
+        android:layout_marginStart="72dp"
+        android:layout_toEndOf="@+id/gostei"
+        android:text="Não Gostei"
+        android:onClick="ButtonNaoGostei"/>
+
+
 </RelativeLayout>
+

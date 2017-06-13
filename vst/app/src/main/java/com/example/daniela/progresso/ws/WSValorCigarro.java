@@ -3,8 +3,6 @@ package com.example.daniela.progresso.ws;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.daniela.progresso.Entidade.Cigarros;
-
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
@@ -13,42 +11,42 @@ import org.ksoap2.transport.HttpTransportSE;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.util.Date;
 
 /**
- * Created by daniela on 07/06/17.
+ * Created by daniela on 10/06/17.
  */
 
-public class WebServiceMediaCigarros extends AsyncTask<String, Void, Float> {
+public class WSValorCigarro extends AsyncTask<String, Void, Boolean> {
 
     private Exception exception;
-    public Date data;
+    public Integer cigarros;
+    public String valorMaco;
+    public String email;
 
-    public WebServiceMediaCigarros(Date data){
-        this.data = data;
+    public WSValorCigarro(Integer cigarros, String valorMaco, String email){
+        this.cigarros = cigarros;
+        this.valorMaco = valorMaco;
+        this.email = email;
     }
 
     @Override
-    protected Float doInBackground(String... params) {
+    protected Boolean doInBackground(String... params) {
         String namespace = "http://ws.wati/";
-        String method = "validate";
-        String url = "http://192.168.0.103:8080/wati/AppWebService?wsdl";
+        String method = "enviaValorCigarro";
+        String url = "http://192.168.0.105:8080/wati/AppWebService?wsdl";
         String actionURL = "";
-
-        //dados que serão submetidos ao servidor
-        Date dt = data;
-
-        //Imprimindo os dados para teste
-        System.out.println("ws data: " + dt);
 
         //criando o objeto SOAP
         SoapObject soap = new SoapObject(namespace, method);
-
-        //parametros
-        soap.addProperty("data", dt);
+        //dados submetidos
+        soap.addProperty("cigarros", cigarros);
+        soap.addProperty("valorMaco", valorMaco);
+        soap.addProperty("email", email);
 
         //Imprimindo os dados para teste
-        System.out.println("ws data: " + dt);
+        System.out.println("cigarros" +  cigarros);
+        System.out.println("valorMaco" +  valorMaco);
+        System.out.println("email" + email);
 
         //Criando o envelope
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
@@ -71,6 +69,6 @@ public class WebServiceMediaCigarros extends AsyncTask<String, Void, Float> {
             e.printStackTrace();
         }
 
-        return null;
+        return true;
     }
 }
