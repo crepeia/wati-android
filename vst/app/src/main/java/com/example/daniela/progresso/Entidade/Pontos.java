@@ -17,14 +17,31 @@ public class Pontos implements Serializable {
     @DatabaseField(canBeNull = false, foreign = true) //foreignAutoRefresh = true)
     public User user;
 
-    @DatabaseField(columnName = "lida")
-    private int ponto;
+    @DatabaseField(columnName = "ponto_dica")
+    private int pontoDica;
+
+    @DatabaseField(columnName = "ponto_site")
+    private int pontoSite;
+
+    @DatabaseField(columnName = "ponto_cadastroApp")
+    private int pontoCadastroApp;
+
+    @DatabaseField(columnName = "ponto_registro")
+    private int pontoRegistro;
+
+    @DatabaseField(columnName = "ponto_naoFumar")
+    private int pontoNaoFumar;
 
     public Pontos(){}
 
-    public Pontos(User user, int ponto){
+    public Pontos(User user, int pontoDica, int pontoSite, int pontoCadastroApp, int pontoRegistro, int pontoNaoFumar){
         this.user = user;
-        this.ponto = ponto;
+        this.pontoDica = pontoDica;
+        this.pontoSite = pontoSite;
+        this.pontoCadastroApp = pontoCadastroApp;
+        this.pontoRegistro = pontoRegistro;
+        this.pontoNaoFumar = pontoNaoFumar;
+
     }
 
     public long getId() {
@@ -43,11 +60,43 @@ public class Pontos implements Serializable {
         this.user = user;
     }
 
-    public int getPonto() {
-        return ponto;
+    public int getPontoDica() {
+        return pontoDica;
     }
 
-    public void setPonto(int ponto) {
-        this.ponto = ponto;
+    public void setPontoDica(int pontoDica) {
+        this.pontoDica = pontoDica;
+    }
+
+    public int getPontoSite() {
+        return pontoSite;
+    }
+
+    public void setPontoSite(int pontoSite) {
+        this.pontoSite = pontoSite;
+    }
+
+    public int getPontoCadastroApp() {
+        return pontoCadastroApp;
+    }
+
+    public void setPontoCadastroApp(int pontoCadastroApp) {
+        this.pontoCadastroApp = pontoCadastroApp;
+    }
+
+    public int getPontoRegistro() {
+        return pontoRegistro;
+    }
+
+    public void setPontoRegistro(int pontoRegistro) {
+        this.pontoRegistro = pontoRegistro;
+    }
+
+    public int getPontoNaoFumar() {
+        return pontoNaoFumar;
+    }
+
+    public void setPontoNaoFumar(int pontoNaoFumar) {
+        this.pontoNaoFumar = pontoNaoFumar;
     }
 }

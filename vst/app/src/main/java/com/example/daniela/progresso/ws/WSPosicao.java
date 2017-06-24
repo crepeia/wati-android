@@ -11,42 +11,34 @@ import org.ksoap2.transport.HttpTransportSE;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.util.Date;
 
 /**
- * Created by daniela on 10/06/17.
+ * Created by daniela on 17/06/17.
  */
-public class WSFacebook extends AsyncTask<String, Void, Boolean> {
+
+public class WSPosicao extends AsyncTask<String, Void, Integer> {
 
     private Exception exception;
-    public String name;
     public String email;
-    public String gender;
 
-    public WSFacebook(String name, String email, String gender){
-        this.name = name;
+    public  WSPosicao(String email){
         this.email = email;
-        this.gender = gender;
     }
 
     @Override
-    protected Boolean doInBackground(String... params) {
+    protected Integer doInBackground(String... params) {
         String namespace = "http://ws.wati/";
-        String method = "usuariosFacebook";
+        String method = "calculaPosicao";
         String url = "http://192.168.25.50:8080/wati/AppWebService?wsdl";
         String actionURL = "";
 
         //criando o objeto SOAP
         SoapObject soap = new SoapObject(namespace, method);
         //dados submetidos
-        soap.addProperty("name", name);
         soap.addProperty("email", email);
-        soap.addProperty("gender", gender);
 
         //Imprimindo os dados para teste
-        System.out.println("name: " + name);
-        System.out.println("email: " + email);
-        System.out.println("gender: " + gender);
+        System.out.println("email" +  email);
 
         //Criando o envelope
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
@@ -62,6 +54,17 @@ public class WSFacebook extends AsyncTask<String, Void, Boolean> {
             Object msg = envelope.getResponse();
             Log.i("WebService",  "Response: " + msg);
 
+            String x;
+            x = msg.toString();
+            System.out.println("SoapObject x: " + x);
+            int num = Integer.valueOf(x);
+            System.out.println("SoapObject num: " + num);
+            //SoapObject soapObject = (SoapObject) msg;
+            System.out.println("SoapObject: " + msg);
+            //num = (int) soapObject.getProperty("posicao");
+
+            System.out.println("num" + num);
+            return num;
         } catch (HttpResponseException e) {
             e.printStackTrace();
         } catch (XmlPullParserException e) {
@@ -70,6 +73,7 @@ public class WSFacebook extends AsyncTask<String, Void, Boolean> {
             e.printStackTrace();
         }
 
-        return true;
+        return 0;
+
     }
 }

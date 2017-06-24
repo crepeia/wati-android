@@ -96,8 +96,8 @@ public class telaUnica extends AppCompatActivity {
         Log.i("ValorCigarros:", String.valueOf(user.getCigarros()));
         Log.i("ValorCigarros:", String.valueOf(user.getValorMaco()));
 
-        //WSValorCigarro wsValorCigarro = new WSValorCigarro(Integer.parseInt(cigarros.getText().toString()), (valorMaco.getText().toString()), user.getEmail());
-        //wsValorCigarro.execute();
+        WSValorCigarro wsValorCigarro = new WSValorCigarro(Integer.parseInt(cigarros.getText().toString()), (valorMaco.getText().toString()), user.getEmail());
+        wsValorCigarro.execute();
 
         Intent it = new Intent(this, MainActivity.class);
         startActivity(it);

@@ -11,42 +11,34 @@ import org.ksoap2.transport.HttpTransportSE;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.util.Date;
 
 /**
- * Created by daniela on 10/06/17.
+ * Created by daniela on 18/06/17.
  */
-public class WSFacebook extends AsyncTask<String, Void, Boolean> {
+
+public class WSNaoFumou  extends AsyncTask<String, Void, Boolean> {
 
     private Exception exception;
-    public String name;
-    public String email;
-    public String gender;
+    String email;
 
-    public WSFacebook(String name, String email, String gender){
-        this.name = name;
+    public WSNaoFumou(String email){
         this.email = email;
-        this.gender = gender;
     }
 
     @Override
     protected Boolean doInBackground(String... params) {
+
         String namespace = "http://ws.wati/";
-        String method = "usuariosFacebook";
+        String method = "enviaNaoFumou";
         String url = "http://192.168.25.50:8080/wati/AppWebService?wsdl";
         String actionURL = "";
 
         //criando o objeto SOAP
         SoapObject soap = new SoapObject(namespace, method);
         //dados submetidos
-        soap.addProperty("name", name);
         soap.addProperty("email", email);
-        soap.addProperty("gender", gender);
 
-        //Imprimindo os dados para teste
-        System.out.println("name: " + name);
-        System.out.println("email: " + email);
-        System.out.println("gender: " + gender);
+        System.out.println("email" +  email);
 
         //Criando o envelope
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
@@ -61,7 +53,6 @@ public class WSFacebook extends AsyncTask<String, Void, Boolean> {
             httpTransportSE.call(actionURL, envelope);
             Object msg = envelope.getResponse();
             Log.i("WebService",  "Response: " + msg);
-
         } catch (HttpResponseException e) {
             e.printStackTrace();
         } catch (XmlPullParserException e) {
@@ -71,5 +62,6 @@ public class WSFacebook extends AsyncTask<String, Void, Boolean> {
         }
 
         return true;
+
     }
 }

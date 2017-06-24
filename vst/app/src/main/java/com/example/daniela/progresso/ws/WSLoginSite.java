@@ -36,7 +36,7 @@ public class WSLoginSite extends AsyncTask<String, Void, User> {
     protected User doInBackground(String... params) {
         String namespace = "http://ws.wati/";
         String method = "validate";
-        String url = "http://192.168.0.103:8080/wati/AppWebService?wsdl";
+        String url = "http://www.vivasemtabaco.com.br:80/wati/AppWebService?xsd=1";
         String actionURL = "";
 
         //dados que serão submetidos ao servidor

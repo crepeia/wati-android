@@ -27,7 +27,7 @@ public class DBSQLite extends OrmLiteSqliteOpenHelper {
     // Campos
 
     public static final String DB_NAME = "watiAndroid.db";
-    private static final int DB_VERSION = 6;
+    private static final int DB_VERSION = 7;
 
     private Dao<User, Integer> userDao;
     private Dao<Acao, Integer> acaoDao;

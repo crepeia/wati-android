@@ -43,7 +43,7 @@
         android:layout_centerHorizontal="true"
         android:autoLink="web"
         android:id="@+id/textView5"
-        android:inputType="textUri"
+        android:inputType="text"
         android:onClick="linkSite"
         />
 
@@ -59,6 +59,15 @@
         android:layout_marginTop="56dp"
         android:id="@+id/textView6" />
 
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:text="Visitar Site do Viva Sem Tabaco"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:onClick="linkSite"/>
 
 
 </RelativeLayout>

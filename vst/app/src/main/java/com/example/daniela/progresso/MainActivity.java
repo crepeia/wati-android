@@ -25,6 +25,7 @@ import com.example.daniela.progresso.DAO.DBSQLite;
 import com.example.daniela.progresso.DAO.DesafioDAO;
 import com.example.daniela.progresso.DAO.DicasDAO;
 import com.example.daniela.progresso.DAO.PontoDAO;
+import com.example.daniela.progresso.DAO.UserDAO;
 import com.example.daniela.progresso.Entidade.Acao;
 import com.example.daniela.progresso.Entidade.Cigarros;
 import com.example.daniela.progresso.Entidade.Desafios;
@@ -32,6 +33,10 @@ import com.example.daniela.progresso.Entidade.Dicas;
 import com.example.daniela.progresso.Entidade.Pontos;
 import com.example.daniela.progresso.Entidade.User;
 import com.example.daniela.progresso.ws.WSCigarro;
+import com.example.daniela.progresso.ws.WSMediaCigarros;
+import com.example.daniela.progresso.ws.WSNaoFumou;
+import com.example.daniela.progresso.ws.WSPonto;
+import com.example.daniela.progresso.ws.WSPosicao;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.series.DataPoint;
@@ -41,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -51,11 +57,13 @@ public class MainActivity extends AppCompatActivity
     private DesafioDAO desafioDAO;
     private DicasDAO dicasDAO;
     private PontoDAO pontoDAO;
+    private UserDAO userDAO;
     Cigarros cigarros;
     User user;
     Acao acao;
     Dicas dicas;
     Desafios desafio;
+    Pontos pontos;
 
     int pontoDicas;
     int pontoFicarSemFumar;
@@ -71,6 +79,8 @@ public class MainActivity extends AppCompatActivity
 
     ArrayList<Date> dataInsercaoCigarro;
 
+    int pDica = 0, pSite = 0, pCadastroApp = 0, pRegistro = 0, pNaoFumar = 0;
+
 
 
     @Override
@@ -83,6 +93,7 @@ public class MainActivity extends AppCompatActivity
 
         System.out.println("dbsqlite: " + dbsqLite);
         try {
+            userDAO = new UserDAO(dbsqLite.getConnectionSource());
             cigarroDAO = new CigarrosDAO(dbsqLite.getConnectionSource());
             acaoDAO = new AcaoDAO(dbsqLite.getConnectionSource());
             desafioDAO = new DesafioDAO(dbsqLite.getConnectionSource());
@@ -94,6 +105,8 @@ public class MainActivity extends AppCompatActivity
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        acao = new Acao();
         // cigarros = new Cigarros();
         //cigarros.setUser(UserManager.getUser());
         Calendar dateAtual = Calendar.getInstance();
@@ -148,7 +161,13 @@ public class MainActivity extends AppCompatActivity
         adicionaCigarro = (Button) findViewById(R.id.addCigarro);
         subtraiCigarro = (Button) findViewById(R.id.subCigarro);
 
-        pontuacao.setText(Integer.toString(this.retornaPontuacaoTotal()));
+        cigarrosFumados.setText(Integer.toString(cigarros.getCigarrosDiario()));
+
+        try {
+            pontuacao.setText(Integer.toString(this.retornaPontuacaoTotal()));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -162,13 +181,43 @@ public class MainActivity extends AppCompatActivity
         System.out.println("DTATUAL: " +    dtAtual.getTime());
         System.out.println("DTANTES" + dtAntes.getTime());
 
-        grafico();
+        this.grafico();
+        this.posicao();
+        this.dinheiroEconomizado();
+        this.dinheiroNaoEconomizado();
+
+        try {
+            List<Cigarros> cList = cigarroDAO.queryForAll();
+            System.out.println("cList" + cList);
+            if(cList.isEmpty()) {
+                cigarrosNaoFumados.setText(Integer.toString(0));
+                System.out.println("1111");
+            }else{
+                for(int i = 0; i < cList.size(); i++){
+                    System.out.println("2222");
+                    Calendar cDate = Calendar.getInstance();
+                    Calendar atualDate = Calendar.getInstance();
+                    cDate.setTime(cList.get(0).getDate());
+
+                    if((cDate.get(Calendar.YEAR) == atualDate.get(Calendar.YEAR)) && (cDate.get(Calendar.DAY_OF_YEAR) == atualDate.get(Calendar.DAY_OF_YEAR))){
+                        System.out.println("3333");
+                        if(cigarros.getCigarrosDiario() < UserManager.getUser().getCigarros()){
+                            cigarrosNaoFumados.setText(Integer.toString(UserManager.getUser().getCigarros()-cigarros.getCigarrosDiario()));
+                        }else{
+                            System.out.println("4444");
+                            cigarrosNaoFumados.setText(Integer.toString(0));
+                        }
+                    }else {
+                        System.out.println("555");
+                        cigarrosNaoFumados.setText(Integer.toString(0));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
-
-
-
-
-
 
     public void grafico(){
         GraphView graph = (GraphView) findViewById(R.id.graph);
@@ -178,7 +227,7 @@ public class MainActivity extends AppCompatActivity
         graph.getGridLabelRenderer().setVerticalAxisTitle("Cigarros");
         graph.getGridLabelRenderer().setHumanRounding(true);
         graph.getGridLabelRenderer().setNumVerticalLabels(11);
-        graph.getGridLabelRenderer().setNumHorizontalLabels(8);
+        graph.getGridLabelRenderer().setNumHorizontalLabels(9);
         // set manual X bounds
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinY(0);
@@ -186,7 +235,7 @@ public class MainActivity extends AppCompatActivity
 
 
         graph.getViewport().setXAxisBoundsManual(true);
-        graph.getViewport().setMinX(1);
+        graph.getViewport().setMinX(0);
         graph.getViewport().setMaxX(8);
 
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(generateData(pontos()));
@@ -201,18 +250,21 @@ public class MainActivity extends AppCompatActivity
         //});
         //graph.addSeries(series);
 
-        LineGraphSeries<DataPoint> series2 = new LineGraphSeries<>(new DataPoint[] {
+        //LineGraphSeries<DataPoint> series2 = new LineGraphSeries<>(generateDataMedia(Media()));
+        //graph.addSeries(series2);
+
+        /*LineGraphSeries<DataPoint> series2 = new LineGraphSeries<>(new DataPoint[] {
                 new DataPoint(0, 3),
                 new DataPoint(1, 3),
                 new DataPoint(2, 6),
                 new DataPoint(3, 2),
                 new DataPoint(4, 5)
         });
-        graph.addSeries(series2);
+        graph.addSeries(series2);*/
 
         series.setTitle("Você");
         series.setColor(Color.RED);
-        series2.setTitle("Pessoas");
+        //series2.setTitle("Pessoas");
 
         graph.getLegendRenderer().setVisible(true);
         graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
@@ -222,6 +274,7 @@ public class MainActivity extends AppCompatActivity
         Calendar calendar = Calendar.getInstance();
         calendar.get(Calendar.DAY_OF_WEEK);
         System.out.println("day of week: " + calendar.get(Calendar.DAY_OF_WEEK));
+
         //calendar.add(Calendar.DAY_OF_WEEK, -1);
         int pontsGrafico[] = new int[7];
 
@@ -242,11 +295,59 @@ public class MainActivity extends AppCompatActivity
         Calendar calendar = Calendar.getInstance();
         int count = calendar.get(Calendar.DAY_OF_WEEK);
         System.out.println("Count: " + count);
+        DataPoint[] values = new DataPoint[count+1];
+        for (int i=0; i <= (count); i++) {
+            System.out.println("i:" + i);
+            //if(i == count) {
+                DataPoint v = new DataPoint(i, pontsGraf[i]);
+                System.out.println("v:" + v);
+                values[i] = v;
+                System.out.println("values: " + values[i]);
+            //}
+        }
+        return values;
+    }
+
+    public float[] Media(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.get(Calendar.DAY_OF_WEEK);
+        System.out.println("day of week: " + calendar.get(Calendar.DAY_OF_WEEK));
+        calendar.add(Calendar.DAY_OF_WEEK, -1);
+        float media[] = new float[7];
+
+        int j = calendar.get(Calendar.DAY_OF_WEEK);
+        System.out.println("j:" + j);
+        for (int i = 0; i < 7; i++){
+            if(i == j) {
+
+                try {
+                    WSMediaCigarros wsMediaCigarros = new WSMediaCigarros(calendar.getTime());
+                    int m = wsMediaCigarros.execute().get();
+                    System.out.println("media de retorno: " + m);
+                    media[i] = m;
+                    System.out.println("media cigarros:" + m);
+                    System.out.println("media: " + media[i]);
+                    System.out.println("i:" + i);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+        return media;
+    }
+
+    public DataPoint[] generateDataMedia(float[] media){
+        Calendar calendar = Calendar.getInstance();
+        int count = calendar.get(Calendar.DAY_OF_WEEK);
+        System.out.println("Count: " + count);
 
         DataPoint[] values = new DataPoint[count];
         for (int i=0; i < (count); i++) {
             System.out.println("i:" + i);
-            DataPoint v = new DataPoint(i, pontsGraf[i]);
+            DataPoint v = new DataPoint(i, media[i]);
             System.out.println("v:" + v);
             values[i] = v;
             System.out.println("values: " + values[i]);
@@ -336,7 +437,7 @@ public class MainActivity extends AppCompatActivity
         if(nFumados > 0){
             economizado = economizado + (nFumados * valorPorCigarro);
             System.out.println("economizado" + economizado);
-            dinheiroEconomizado.setText("R$ " + economizado + ",00");
+            dinheiroEconomizado.setText("R$ " + economizado );
         }else{
             dinheiroNaoEconomizado();
             System.out.println("entrou no else");
@@ -356,7 +457,7 @@ public class MainActivity extends AppCompatActivity
             Fumados = Math.abs(Fumados);
             nEconomizado = nEconomizado + (Fumados * valorPorCigarro);
             System.out.println("economizado" + nEconomizado);
-            dinheiroNaoEconomizado.setText("R$ " + nEconomizado + ",00");
+            dinheiroNaoEconomizado.setText("R$ " + nEconomizado );
         }
     }
 
@@ -385,6 +486,7 @@ public class MainActivity extends AppCompatActivity
         dinheiroNaoEconomizado();
         pontos();
         //grafico();
+        pontoCigarroDiario();
 
         System.out.println("DADOS data: " + cigarros.getDate().getTime());
         System.out.println("DADOS cigarros: " + cigarros.getCigarrosDiario());
@@ -392,8 +494,8 @@ public class MainActivity extends AppCompatActivity
         Date d = new Date(1497063621913l * 1000);
         System.out.println("DADOS data: " + d);
 
-        //WSCigarro webServiceCigarro = new WSCigarro(cigarros.getDate(), cigarros.getCigarrosDiario(), UserManager.getUser().getEmail());//, UserManager.getUser());
-        //webServiceCigarro.execute();
+        WSCigarro webServiceCigarro = new WSCigarro(cigarros.getDate(), cigarros.getCigarrosDiario(), UserManager.getUser().getEmail());//, UserManager.getUser());
+        webServiceCigarro.execute();
 
     }
 
@@ -420,7 +522,10 @@ public class MainActivity extends AppCompatActivity
         dinheiroNaoEconomizado();
         pontos();
         grafico();
+        pontoCigarroDiario();
 
+        WSCigarro webServiceCigarro = new WSCigarro(cigarros.getDate(), cigarros.getCigarrosDiario(), UserManager.getUser().getEmail());//, UserManager.getUser());
+        webServiceCigarro.execute();
     }
 
     public void botaoNaoFumou(View view){
@@ -432,6 +537,10 @@ public class MainActivity extends AppCompatActivity
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        pontoSemFumar();
+
+        WSNaoFumou wsNaoFumou = new WSNaoFumou(UserManager.getUser().getEmail());
+        wsNaoFumou.execute();
     }
 
 
@@ -441,12 +550,17 @@ public class MainActivity extends AppCompatActivity
         dbsqLite.close();
     }
 
-    public void pontuacao(){
-
-    }
-
     public void posicao(){
+        WSPosicao wsPosicao = new WSPosicao(UserManager.getUser().getEmail());
+        try {
+            int pos = wsPosicao.execute().get();
+            posicao.setText(String.valueOf(pos));
 
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -516,7 +630,7 @@ public class MainActivity extends AppCompatActivity
 
     public void pontoCigarroDiario(){
         try {
-            List<Desafios> desafiosList = desafioDAO.queryForEq("tituto", "Informar diariamente a quantidade de cigarros fumados");
+            List<Desafios> desafiosList = desafioDAO.queryForEq("titulo", "Informar diariamente a quantidade de cigarros fumados");
             for (Desafios d : desafiosList) {
                 System.out.println(d.getTitulo());
                 System.out.println(d.getDescricao());
@@ -541,21 +655,46 @@ public class MainActivity extends AppCompatActivity
         Métodos do esquema de pontuação
      */
 
-    public int visitaSite(){
+    public int visitaSite() {
         //acao = new Acao();
         //desafio = new Desafios();
         int ponto;
 
         try {
             List<Desafios> desafiosList = desafioDAO.queryForEq("titulo", "Visitar o site do Viva Sem Tabaco");
+            System.out.println("Size de listDesafios" + desafiosList.size());
             desafio = desafiosList.get(0);
 
             List<Acao> acaoList = acaoDAO.queryForEq("desafio_id", desafio.getId());
+            System.out.println("Size de listAcao" + acaoList.size());
+            if (acaoList.isEmpty()) {
+                System.out.println("Nao fez acao de não fumar ainda");
+            } else {
+                System.out.println("Ganha ponto");
 
-            for (Acao ac : acaoList){
-                if(ac.getUser().getEmail() == UserManager.getUser().getEmail()){
-                    ponto = ac.getPonto();
-                    return ponto;
+                for (Acao ac : acaoList) {
+                    System.out.println("ponto" + ac.getPonto());
+                    System.out.println("desafio" + ac.getDesafio().getTitulo());
+                    System.out.println("user" + ac.getUser().getEmail());
+                    System.out.println("data" + ac.getData());
+
+                    List<User> userList = null;
+
+                    userList = userDAO.queryForEq("id", ac.getUser().getId());
+
+
+                    User user = userList.get(0);
+
+                    System.out.println("USER EMAIL: " + user.getEmail());
+                    System.out.println("USER Manager: " + UserManager.getUser().getEmail());
+
+                    if (user.getEmail().equals(UserManager.getUser().getEmail())) {
+
+                        System.out.println("ponto: " + ac.getPonto());
+                        //if (ac.getUser().getEmail() == UserManager.getUser().getEmail()) {
+                        ponto = ac.getPonto();
+                        return ponto;
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -564,8 +703,11 @@ public class MainActivity extends AppCompatActivity
         return 0;
     }
 
-    public int verDicas(){
-        Calendar dtAtual = Calendar.getInstance();
+    public void varreVetor() {
+    }
+
+    public int verDicas() throws SQLException {
+
         Calendar dtAntes = Calendar.getInstance();
         acao = new Acao();
         desafio = new Desafios();
@@ -574,27 +716,57 @@ public class MainActivity extends AppCompatActivity
             List<Desafios> desafiosList = desafioDAO.queryForEq("titulo", "Visualizar dicas diariamente");
             desafio = desafiosList.get(0);
 
-            List<Acao> acaoList = acaoDAO.queryForEq("desafio", desafio); //retorna a ação que tem como desafio o passado como parametro
-            for(Desafios d : desafiosList){
+            List<Acao> acaoList = acaoDAO.queryForEq("desafio_id", desafio.getId()); //retorna a ação que tem como desafio o passado como parametro
+            if (acaoList.isEmpty()) {
+                System.out.println("Nao fez acao de não fumar ainda");
+            } else {
+                System.out.println("Ganha ponto");
+                for (Desafios d : desafiosList) {
+                    Acao ac = acaoList.get(0);
 
-                for (Acao ac : acaoList) {
-                    if (ac.getUser().getEmail() == UserManager.getUser().getEmail()) {
-                        pontoDicas = ac.getPonto();
+                    List<User> userList = null;
+                    try {
+                        userList = userDAO.queryForEq("id", ac.getUser().getId());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
 
-                    if (d.getTipo() == 1) { // 1 é contínua, então verifica se no dia anterior ele ganhou ponto.
-                        //dtAtual.setTime(ac.getData()); //pega a data atual (data atual do dia requisição) do banco
-                        Calendar c = Calendar.getInstance();
-                        c.setTime(ac.getData());
+                    User user = userList.get(0);
 
-                        dtAntes.add(Calendar.DAY_OF_YEAR, -1);
-                        if((c.get(Calendar.DAY_OF_MONTH) == dtAntes.get(Calendar.DAY_OF_YEAR))){ //ele leu dica no dia anterior tbem
-                            pontoDicas = pontoDicas + d.getVariacao();
+                    System.out.println("USER EMAIL: " + user.getEmail());
+                    System.out.println("USER Manager: " + UserManager.getUser().getEmail());
+
+                    if (user.getEmail().equals(UserManager.getUser().getEmail())) {
+
+                        if(ac.getData().equals(Calendar.getInstance().getTime())){
+                            //ele já fez a acao de hoje, então nao computa mais ponto
+                            System.out.println("e p entrar aqui");
+                            pontoDicas = pontos.getPontoDica();
                         }
+                        else{
+                            pontoDicas = ac.getPonto();
+                            System.out.println("pontoDica:" + pontoDicas);
+
+                            if (d.getTipo() == 1) { // 1 é contínua, então verifica se no dia anterior ele ganhou ponto.
+                                //dtAtual.setTime(ac.getData()); //pega a data atual (data atual do dia requisição) do banco
+                                Calendar c = Calendar.getInstance();
+                                c.setTime(ac.getData());
+
+                                dtAntes.add(Calendar.DAY_OF_YEAR, -1);
+                                if ((c.get(Calendar.DAY_OF_MONTH) == dtAntes.get(Calendar.DAY_OF_YEAR))) { //ele ficou sem fumar ontem
+                                    pontoDicas = pontoDicas + d.getVariacao();
+                                }
+                            }
+                        }
+
                     }
+
+
                 }
             }
+
             return pontoDicas;
+
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -603,7 +775,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public int ficarSemFumar(){
+    public int ficarSemFumar() {
         Calendar dtAntes = Calendar.getInstance();
         acao = new Acao();
         desafio = new Desafios();
@@ -613,11 +785,29 @@ public class MainActivity extends AppCompatActivity
             desafio = desafiosList.get(0);
 
             List<Acao> acaoList = acaoDAO.queryForEq("desafio_id", desafio.getId()); //retorna a ação que tem como desafio o passado como parametro
-            for(Desafios d : desafiosList){
+            if (acaoList.isEmpty()) {
+                System.out.println("Nao fez acao de não fumar ainda");
+            } else {
+                System.out.println("Ganha ponto");
+                for (Desafios d : desafiosList) {
 
-                for (Acao ac : acaoList) {
-                    if (ac.getUser().getEmail() == UserManager.getUser().getEmail()) {
+                    Acao ac = acaoList.get(0);
+
+                    List<User> userList = null;
+                    try {
+                        userList = userDAO.queryForEq("id", ac.getUser().getId());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
+                    User user = userList.get(0);
+
+                    System.out.println("USER EMAIL: " + user.getEmail());
+                    System.out.println("USER Manager: " + UserManager.getUser().getEmail());
+
+                    if (user.getEmail().equals(UserManager.getUser().getEmail())) {
                         pontoFicarSemFumar = ac.getPonto();
+                        System.out.println("Ponto fumar: " + pontoFicarSemFumar);
                     }
 
                     if (d.getTipo() == 1) { // 1 é contínua, então verifica se no dia anterior ele ganhou ponto.
@@ -626,25 +816,25 @@ public class MainActivity extends AppCompatActivity
                         c.setTime(ac.getData());
 
                         dtAntes.add(Calendar.DAY_OF_YEAR, -1);
-                        if((c.get(Calendar.DAY_OF_MONTH) == dtAntes.get(Calendar.DAY_OF_YEAR))){ //ele ficou sem fumar ontem
+                        if ((c.get(Calendar.DAY_OF_MONTH) == dtAntes.get(Calendar.DAY_OF_YEAR))) { //ele ficou sem fumar ontem
                             pontoFicarSemFumar = pontoFicarSemFumar + d.getVariacao();
                         }
                     }
                 }
+                return pontoFicarSemFumar;
             }
-            return pontoDicas;
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return 0;
     }
 
+
     public void preencherPlano(){
 
     }
 
-    public int fazerCadastroApp(){
+    public int fazerCadastroApp() {
         Calendar dtAntes = Calendar.getInstance();
         acao = new Acao();
         desafio = new Desafios();
@@ -652,44 +842,48 @@ public class MainActivity extends AppCompatActivity
         try {
             List<Desafios> desafiosList = desafioDAO.queryForEq("titulo", "Fazer cadastro no aplicativo");
             desafio = desafiosList.get(0);
-            System.out.println("desafio " + desafio.getDescricao());
 
             List<Acao> acaoList = acaoDAO.queryForEq("desafio_id", desafio.getId()); //retorna a ação que tem como desafio o passado como parametro
-            System.out.println("id: " + desafio.getId());
-            System.out.println("size: " + acaoList.size());
-            for(Desafios d : desafiosList){
-                System.out.println("*********");
-                for (Acao ac : acaoList) {
-                    System.out.println("///////");
-                    System.out.println("ac.getUser().getEmail()" + ac.getUser().getEmail());
-                    System.out.println(ac.getId());
-                    System.out.println(ac.getUser());
-                    System.out.println(ac.getData());
-                    System.out.println(ac.getDesafio());
-                    System.out.println(ac.getPonto());
-                    System.out.println(ac.getUser().getEmail());
-                    System.out.println(ac.getDesafio().getDescricao());
-                    System.out.println("UserManager.getUser().getEmail()" + UserManager.getUser().getEmail());
-                    if (ac.getUser().getEmail() == UserManager.getUser().getEmail()) {
-                        pontoCadastroApp= ac.getPonto();
-                        System.out.println("pontoApp: " + pontoCadastroApp);
+            if (acaoList.isEmpty()) {
+                System.out.println("Nao fez acao de cadastro ainda");
+            } else {
+                System.out.println("Ganha ponto");
+                for (Desafios d : desafiosList) {
+
+                    Acao ac = acaoList.get(0);
+
+                    List<User> userList = null;
+                    try {
+                        userList = userDAO.queryForEq("id", ac.getUser().getId());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
 
-                    if (d.getTipo() == 1) { // 1 é contínua, então verifica se no dia anterior ele ganhou ponto.
-                        //dtAtual.setTime(ac.getData()); //pega a data atual (data atual do dia requisição) do banco
-                        System.out.println("Nao deve entrar aqui");
-                        Calendar c = Calendar.getInstance();
-                        c.setTime(ac.getData());
+                    User user = userList.get(0);
 
-                        dtAntes.add(Calendar.DAY_OF_YEAR, -1);
-                        if((c.get(Calendar.DAY_OF_MONTH) == dtAntes.get(Calendar.DAY_OF_YEAR))){ //ele ficou sem fumar ontem
-                            pontoCadastroApp = pontoCadastroApp + d.getVariacao();
+                    System.out.println("USER EMAIL: " + user.getEmail());
+                    System.out.println("USER Manager: " + UserManager.getUser().getEmail());
+
+                    if (user.getEmail().equals(UserManager.getUser().getEmail())) {
+
+                        pontoCadastroApp = ac.getPonto();
+                        System.out.println("pontoApp: " + pontoCadastroApp);
+
+                        if (d.getTipo() == 1) { // 1 é contínua, então verifica se no dia anterior ele ganhou ponto.
+                            //dtAtual.setTime(ac.getData()); //pega a data atual (data atual do dia requisição) do banco
+                            System.out.println("Nao deve entrar aqui");
+                            Calendar c = Calendar.getInstance();
+                            c.setTime(ac.getData());
+
+                            dtAntes.add(Calendar.DAY_OF_YEAR, -1);
+                            if ((c.get(Calendar.DAY_OF_MONTH) == dtAntes.get(Calendar.DAY_OF_YEAR))) { //ele ficou sem fumar ontem
+                                pontoCadastroApp = pontoCadastroApp + d.getVariacao();
+                            }
                         }
                     }
+                    return pontoCadastroApp;
                 }
             }
-            return pontoCadastroApp;
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -713,12 +907,30 @@ public class MainActivity extends AppCompatActivity
             List<Desafios> desafiosList = desafioDAO.queryForEq("titulo", "Informar diariamente a quantidade de cigarros fumados");
             desafio = desafiosList.get(0);
 
-            List<Acao> acaoList = acaoDAO.queryForEq("desafio_id", desafio.getId()); //retorna a ação que tem como desafio o passado como parametro
-            for(Desafios d : desafiosList){
+            List<Acao> acaoList = acaoDAO.queryForEq("desafio_id", desafio.getId()); //retorna a ação que tem como desafio o passado como parametroi
+            if(acaoList.isEmpty()){
+                System.out.println("Nao fez acao de registro ainda para ganhar ponto");
+            }else {
+                System.out.println("Ganha ponto");
+                for (Desafios d : desafiosList) {
 
-                for (Acao ac : acaoList) {
-                    if (ac.getUser().getEmail() == UserManager.getUser().getEmail()) {
+                    Acao ac = acaoList.get(0);
+
+                    List<User> userList = null;
+                    try {
+                        userList = userDAO.queryForEq("id", ac.getUser().getId());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
+                    User user = userList.get(0);
+
+                    System.out.println("USER EMAIL: " + user.getEmail());
+                    System.out.println("USER Manager: " + UserManager.getUser().getEmail());
+
+                    if (user.getEmail().equals(UserManager.getUser().getEmail())) {
                         pontoRegistroDiario = ac.getPonto();
+                        System.out.println("Ponto registro: " + pontoRegistroDiario);
                     }
 
                     if (d.getTipo() == 1) { // 1 é contínua, então verifica se no dia anterior ele ganhou ponto.
@@ -727,33 +939,118 @@ public class MainActivity extends AppCompatActivity
                         c.setTime(ac.getData());
 
                         dtAntes.add(Calendar.DAY_OF_YEAR, -1);
-                        if((c.get(Calendar.DAY_OF_MONTH) == dtAntes.get(Calendar.DAY_OF_YEAR))){ //ele ficou sem fumar ontem
+                        if ((c.get(Calendar.DAY_OF_MONTH) == dtAntes.get(Calendar.DAY_OF_YEAR))) { //ele ficou sem fumar ontem
                             pontoRegistroDiario = pontoRegistroDiario + d.getVariacao();
                         }
                     }
                 }
+                return pontoRegistroDiario;
             }
-            return pontoRegistroDiario;
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return 0;
     }
 
-    public int retornaPontuacaoTotal(){
-        int pontoDica = 0, pontoSite = 0, pontoCadastroApp = 0, pontoRegistro = 0, pontoNaoFumar = 0;
-        //pontoDica = this.visitaSite();
-        //pontoSite = this.visitaSite();
-        pontoCadastroApp = this.fazerCadastroApp();
-        //pontoRegistro = this.registroDiario();
-        //pontoNaoFumar = this.ficarSemFumar();
 
-        int pontoTotal = pontoDica + pontoSite + pontoCadastroApp + pontoRegistro + pontoNaoFumar;
+    public int retornaPontuacaoTotal() throws SQLException {
 
         Pontos pontos = new Pontos();
+
+        List<Desafios> desafiosList = desafioDAO.queryForEq("titulo", "Visualizar dicas diariamente");
+        Desafios d = desafiosList.get(0);
+        List<Acao> acaoList = acaoDAO.queryForEq("desafio_id", d.getId());
+        for(int i = 0; i < acaoList.size(); i++){
+            if(acaoList.get(i).getData().equals(Calendar.getInstance().getTime())){
+                pDica = pontos.getPontoDica();
+            }
+            else {
+                pDica = this.verDicas();
+                pontos.setPontoDica(pDica);
+            }
+        }
+
+        List<Desafios> desafiosList1 = desafioDAO.queryForEq("titulo", "Informar diariamente a quantidade de cigarros fumados");
+        Desafios d1 = desafiosList1.get(0);
+        List<Acao> acaoList1 = acaoDAO.queryForEq("desafio_id", d1.getId());
+        for(int i = 0; i < acaoList1.size(); i++){
+            if(acaoList1.get(i).getData().equals(Calendar.getInstance().getTime())){
+                pRegistro = pontos.getPontoRegistro();
+            }
+            else {
+                pRegistro = this.registroDiario();
+                pontos.setPontoRegistro(pRegistro);
+            }
+        }
+
+        List<Desafios> desafiosList2 = desafioDAO.queryForEq("titulo", "Não fumar");
+        Desafios d2 = desafiosList2.get(0);
+        List<Acao> acaoList2 = acaoDAO.queryForEq("desafio_id", d2.getId());
+        for(int i = 0; i < acaoList2.size(); i++){
+            if(acaoList2.get(i).getData().equals(Calendar.getInstance().getTime())) {
+                pNaoFumar = pontos.getPontoNaoFumar();
+            }
+            else{
+                pNaoFumar = this.ficarSemFumar();
+                pontos.setPontoNaoFumar(pNaoFumar);
+            }
+        }
+
+        List<Desafios> desafiosList3 = desafioDAO.queryForEq("titulo", "Visitar o site do Viva Sem Tabaco");
+        Desafios d3 = desafiosList3.get(0);
+        List<Acao> acaoList3 = acaoDAO.queryForEq("desafio_id", d3.getId());
+        for(int i = 0; i < acaoList3.size(); i++){
+            if(acaoList3.get(i).getDesafio().getTitulo().equals(d3.getTitulo())){
+                pSite = pontos.getPontoSite();
+            }
+            else{
+                pSite = this.visitaSite();
+                pontos.setPontoSite(pSite);
+            }
+        }
+
+        List<Desafios> desafiosList4 = desafioDAO.queryForEq("titulo", "Fazer cadastro no aplicativo");
+        Desafios d4 = desafiosList4.get(0);
+        List<Acao> acaoList4 = acaoDAO.queryForEq("desafio_id", d4.getId());
+        for(int i = 0; i < acaoList4.size(); i++) {
+            System.out.println("iiii: " + acaoList4.size());
+            System.out.println("iiii: " + acaoList4.get(i).getDesafio().getTitulo());
+            System.out.println("iiii: " + acaoList4.get(i).getData());
+
+                if(acaoList4.get(i).getData() != null) {
+                    List<Pontos> p = pontoDAO.queryForAll();
+                    Pontos pnt = p.get(0);
+                    if (pnt.getPontoCadastroApp() != 0) {
+
+                        System.out.println("teste: " + acaoList4.get(i).getDesafio().getTitulo());
+                        System.out.println("teste: " + d4.getTitulo());
+                        pCadastroApp = d4.getPontuacao();
+                        System.out.println("Tem que vir aqui");
+                    } else {
+                        pCadastroApp = this.fazerCadastroApp();
+                        pontos.setPontoCadastroApp(pCadastroApp);
+                    }
+                }
+
+
+            System.out.println("Teste: " + acaoList4.get(i).getDesafio().getTitulo());
+            System.out.println("Teste: " + d4.getTitulo());
+           // if (acaoList4.get(i).getDesafio().getTitulo().equals(d4.getTitulo())) {
+            //    pCadastroApp = pontos.getPontoCadastroApp();
+            //} else {
+            //    pCadastroApp = this.fazerCadastroApp();
+            //}
+        }
+
+        System.out.println("pDica: " + pDica);
+        System.out.println("pSite: " + pSite);
+        System.out.println("pCadastro: " + pCadastroApp);
+        System.out.println("pNaoFumar: " + pNaoFumar);
+        System.out.println("olha: " + UserManager.getUser().getEmail());
+
+        int pontoTotal = pDica + pSite + pCadastroApp + pRegistro + pNaoFumar;
+
         pontos.setUser(UserManager.getUser());
-        pontos.setPonto(pontoTotal);
 
         try {
             pontoDAO.createOrUpdate(pontos);
@@ -761,6 +1058,15 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
         System.out.println("ponto total : " + pontoTotal);
+
+        List<Pontos> pontosList = pontoDAO.queryForAll();
+        for(int i = 0; i < pontosList.size(); i++){
+            //System.out.println("Dao ponto: " + pontosList.get(i).getPonto());
+            System.out.println("Dao ponto: " + pontosList.get(i).getUser().getName());
+        }
+
+        WSPonto wsPonto = new WSPonto(pontos.getPontoDica(),pontos.getPontoCadastroApp(), pontos.getPontoRegistro(), pontos.getPontoNaoFumar(), pontos.getPontoSite(), UserManager.getUser().getEmail());
+        wsPonto.execute();
         return pontoTotal;
 
     }

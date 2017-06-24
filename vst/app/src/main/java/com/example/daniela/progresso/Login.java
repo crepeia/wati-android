@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.example.daniela.progresso.DAO.AcaoDAO;
@@ -60,9 +61,13 @@ public class Login extends AppCompatActivity {
 
     CallbackManager callbackManager;
 
+    EditText textEmail;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        textEmail = (EditText) findViewById(R.id.emailVST);
 
         //System.out.println("Executando webService");
         //new WebServiceTask().execute();
@@ -175,8 +180,8 @@ public class Login extends AppCompatActivity {
                                 e.printStackTrace();
                             }
 
-                            //WSFacebook webServiceFacebook = new WSFacebook(user.getName(), user.getEmail(), user.getGender());
-                            //webServiceFacebook.execute();
+                            WSFacebook webServiceFacebook = new WSFacebook(user.getName(), user.getEmail(), user.getGender());
+                            webServiceFacebook.execute();
 
                             System.out.println("começando");
                             /*List<Acao> acaoList = acaoDAO.queryForEq("user_id", UserManager.getUser().getId());
@@ -279,9 +284,17 @@ public class Login extends AppCompatActivity {
 
     public void buscarEmailVST(View v) throws ExecutionException, InterruptedException, SQLException {
 
+        System.out.println("AAAAAAAAAAAAA");
+//        String x = textEmail.getText().toString();
+        //System.out.println("AAAAAAAAAAAAA" + x);
+
         WSLoginSite ws = new WSLoginSite("cwsdanipereira@gmail.com");
         User user;
-        user = ws.execute().get();
+        ws.execute();
+        user = ws.get();
+
+
+        UserManager.setUser(user);
         System.out.println("User de retorno: " + user);
         System.out.println("User de retorno: " + user.getName());
         System.out.println("User de retorno: " + user.getGender());
@@ -297,6 +310,8 @@ public class Login extends AppCompatActivity {
             userDAO.update(user);
             System.out.println("Não É novo");
         }
+
+        redirecionarUsuario(user);
     }
 
     public void salvaDesafios() throws SQLException {
@@ -355,8 +370,15 @@ public class Login extends AppCompatActivity {
     }
 
     public void contabilizaAcaoCadastroApp(){
-        Acao acao = new Acao();
+        //User user = new User();
+
+        System.out.println("user: " + UserManager.getUser());
+        System.out.println("userEmail: " + UserManager.getUser().getEmail());
         try {
+
+            desafioDAO = new DesafioDAO(dbsqLite.getConnectionSource());
+            acaoDAO = new AcaoDAO(dbsqLite.getConnectionSource());
+
             List<Desafios> desafiosList = desafioDAO.queryForEq("titulo", "Fazer cadastro no aplicativo");
             for (Desafios d : desafiosList){
                 System.out.println(d.getTitulo());
@@ -365,7 +387,6 @@ public class Login extends AppCompatActivity {
                 System.out.println(d.getTipo());
                 System.out.println(d.getVariacao());
 
-                //if(d.getTipo() == 2) { //não é contínua a pontuação! Se não é contínua então não tem variação.
                 acao.setPonto(d.getPontuacao());
                 acao.setUser(UserManager.getUser());
                 acao.setData(Calendar.getInstance().getTime());
@@ -373,7 +394,20 @@ public class Login extends AppCompatActivity {
 
                 System.out.println("desafiosList.get(0)" + desafiosList.get(0).getTitulo());
                 System.out.println("UserManager.getUser()" + UserManager.getUser().getEmail());
-                //acaoDAO.createOrUpdate(acao);
+                acaoDAO.createOrUpdate(acao);
+                List<Acao> acaoList = acaoDAO.queryForAll();
+                for (Acao a : acaoList){
+                    System.out.println("dao: " + a.getUser());
+                    System.out.println("dao: " + a.getUser().getId());
+                    System.out.println("dao: " + a.getUser().getEmail()); //me retorna null
+                    System.out.println("dao: " + a.getDesafio());
+                    System.out.println("dao: " + a.getDesafio().getTitulo()); //me retorna null
+                    System.out.println("dao: " + a.getData());
+                    System.out.println("dao: " + a.getPonto());
+
+                }
+
+
             }//else{      É CONTINUA, ENTAO CALCULAR OS PONTOS PARA CONTINUA.
         } catch (SQLException e) {
             e.printStackTrace();
@@ -384,29 +418,7 @@ public class Login extends AppCompatActivity {
         System.out.println("ACAO: " + acao.getDesafio().getTitulo());
         System.out.println("ACAO: " + acao.getPonto());
 
-    }
-
-
-
-
-    /*public static User loggedUser(User user){
-        AccessToken accessToken = AccessToken.getCurrentAccessToken();
-        if(accessToken != null){
-            Log.i("Saída: ", user.getName());
-            return user;
-            //tem alguem logado
         }
-
-        else
-            Log.i("Saída: ", " Usuário não logado");
-            return null;
-
-    }*/
-
-
-
-
-
 }
 
 

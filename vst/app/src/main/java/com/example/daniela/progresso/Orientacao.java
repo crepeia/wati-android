@@ -109,16 +109,13 @@ public class Orientacao extends AppCompatActivity {
             }
         }*/
 
+        this.pontoDica();
+
         Calendar calendar = Calendar.getInstance();
         int i = calendar.get(Calendar.DAY_OF_MONTH);
 
         dica.setText(orientacoes[i]);
 
-    }
-
-    public void ButtonGostei(View v) throws SQLException {
-        Calendar calendar = Calendar.getInstance();
-        int i = calendar.get(Calendar.DAY_OF_MONTH);
         dicas.setDescricao(orientacoes[i]);
         dicas.setGostou(true);
         dicas.setLida(true);
@@ -131,6 +128,31 @@ public class Orientacao extends AppCompatActivity {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        System.out.println("DESCRIÇÃO : " + dicas.getDescricao());
+        System.out.println("GOSTOU: " + dicas.isGostou());
+        System.out.println("LIDA : " + dicas.isLida());
+        System.out.println("DATE : " + dicas.getDate());
+        System.out.println("USER: " + dicas.getUser().getName());
+
+    }
+
+    public void ButtonGostei(View v) throws SQLException {
+        Calendar calendar = Calendar.getInstance();
+        int i = calendar.get(Calendar.DAY_OF_MONTH);
+        dicas.setDescricao(orientacoes[i]);
+        dicas.setLida(true);
+        dicas.setDate(calendar.getTime());
+        dicas.setUser(UserManager.getUser());
+
+        try {
+            System.out.println("TRY 1 ");
+            dicasDAO.createOrUpdate(dicas);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        this.pontoDica();
 
         System.out.println("DESCRIÇÃO : " + dicas.getDescricao());
         System.out.println("GOSTOU: " + dicas.isGostou());
@@ -155,6 +177,8 @@ public class Orientacao extends AppCompatActivity {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        this.pontoDica();
         System.out.println("DESCRIÇÃO : " + dicas.getDescricao());
         System.out.println("GOSTOU: " + dicas.isGostou());
         System.out.println("LIDA : " + dicas.isLida());
@@ -232,7 +256,15 @@ public class Orientacao extends AppCompatActivity {
                 acao.setData(Calendar.getInstance().getTime());
                 acao.setDesafio(desafiosList.get(0));
 
-                acaoDAO.create(acao);
+                acaoDAO.createOrUpdate(acao);
+
+                System.out.println("TESTE" + acao.getData());
+                System.out.println("TESTE" + acao.getDesafio().getId());
+                System.out.println("TESTE" + acao.getUser().getName());
+                System.out.println("TESTE" + acao.getPonto());
+                System.out.println("TESTE" + acao.getId());
+
+               //
             }
         } catch (SQLException e) {
             e.printStackTrace();

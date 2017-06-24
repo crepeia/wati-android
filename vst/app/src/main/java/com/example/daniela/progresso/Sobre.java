@@ -45,9 +45,6 @@ public class Sobre extends AppCompatActivity {
     }
 
     public void linkSite(View view){
-        //Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.vivasemtabaco.com.br"));
-        //startActivity(browserIntent);
-
         try {
             List<Desafios> desafiosList = desafioDAO.queryForEq("titulo", "Visitar o site do Viva Sem Tabaco");
             for (Desafios d : desafiosList){
@@ -58,15 +55,35 @@ public class Sobre extends AppCompatActivity {
                 System.out.println(d.getVariacao());
 
                 //if(d.getTipo() == 2) { //não é contínua a pontuação! Se não é contínua então não tem variação.
-                    acao.setPonto(d.getPontuacao());
-                    acao.setUser(UserManager.getUser());
-                    acao.setData(Calendar.getInstance().getTime());
-                    acao.setDesafio(desafiosList.get(0));
-                    acaoDAO.create(acao);
+                acao.setPonto(d.getPontuacao());
+                acao.setUser(UserManager.getUser());
+                acao.setData(Calendar.getInstance().getTime());
+                acao.setDesafio(desafiosList.get(0));
+                acaoDAO.create(acao);
             }//else{      É CONTINUA, ENTAO CALCULAR OS PONTOS PARA CONTINUA.
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        System.out.println("acaosite: " + acao.getDesafio());
+        System.out.println("acaosite: " + acao.getPonto());
+        System.out.println("acaosite: " + acao.getUser());
+        System.out.println("acaosite: " + acao.getData());
+        System.out.println("acaosite: " + acao.getDesafio().getId());
+        System.out.println("acaosite: " + acao.getDesafio().getTitulo());
+        System.out.println("acaosite: " + acao.getUser().getId());
+        System.out.println("acaosite: " + acao.getUser().getEmail());
+
+
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.vivasemtabaco.com.br"));
+        startActivity(browserIntent);
+
+
+    }
+
+    public void onPause() {
+        super.onPause();
+        dbsqLite.close();
     }
 
 }

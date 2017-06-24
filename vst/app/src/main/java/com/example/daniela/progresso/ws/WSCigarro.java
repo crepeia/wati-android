@@ -39,7 +39,7 @@ public class WSCigarro extends AsyncTask<String, Void, Boolean> {
     protected Boolean doInBackground(String... params) {
         String namespace = "http://ws.wati/";
         String method = "enviaCigarros";
-        String url = "http://192.168.0.105:8080/wati/AppWebService?wsdl";
+        String url = "http://192.168.25.50:8080/wati/AppWebService?wsdl";
         String actionURL = "";
 
         //dados que serão submetidos ao servidor
